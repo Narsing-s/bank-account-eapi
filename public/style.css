@@ -48,6 +48,10 @@ button:hover {
   background: black;
   padding: 10px;
   border-radius: 8px;
-  min-height: 80px;
+  min-height: 100px;
   overflow: auto;
+}
+
+#status {
+  margin-bottom: 10px;
 }
