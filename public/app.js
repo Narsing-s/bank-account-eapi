@@ -1,114 +1,89 @@
 const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-// SAFE FETCH (handles bad JSON)
-async function safeFetch(url, options = {}) {
-  const res = await fetch(url, options);
-  const text = await res.text();
+// COMMON FETCH
+async function callAPI(url, method = "GET", body = null) {
+  try {
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: body ? JSON.stringify(body) : null
+    });
 
-  console.log("RAW:", text);
+    const text = await res.text();
 
-  const fixed = text
-    .replace(/}{/g, "}#SPLIT#{")
-    .split("#SPLIT#")
-    .map(x => JSON.parse(x));
+    console.log("RAW RESPONSE:", text);
 
-  return fixed;
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
+
+  } catch (err) {
+    return { error: "❌ Failed to connect API" };
+  }
 }
 
-// RENDER TABLE
-function renderTable(data) {
-  if (!Array.isArray(data)) data = [data];
-
-  let html = `
-    <table>
-      <tr>
-        <th>Name</th>
-        <th>DOB</th>
-        <th>Mobile</th>
-        <th>Email</th>
-        <th>Address</th>
-      </tr>
-  `;
-
-  data.forEach(d => {
-    html += `
-      <tr>
-        <td>${d.FullName || ""}</td>
-        <td>${d.dateOfBirth || ""}</td>
-        <td>${d.mobileNumber || ""}</td>
-        <td>${d.email || ""}</td>
-        <td>${d.address || ""}</td>
-      </tr>
-    `;
-  });
-
-  html += "</table>";
-
-  document.getElementById("tableContainer").innerHTML = html;
+// SHOW OUTPUT
+function show(data) {
+  output.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
 }
 
 // CREATE
 async function createAccount() {
-  const payload = {
-    FullName: name.value,
-    dateOfBirth: dob.value,
-    mobileNumber: mobile.value,
-    email: email.value,
-    address: address.value
-  };
+  output.innerHTML = "⏳ Creating...";
 
-  const data = await safeFetch(
+  const data = await callAPI(
     `${BASE_URL}/accounts?adharNumber=${aadhar.value}&bankName=${bank.value}`,
+    "POST",
     {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(payload)
+      FullName: name.value,
+      dateOfBirth: dob.value,
+      mobileNumber: mobile.value,
+      email: email.value,
+      address: address.value
     }
   );
 
-  renderTable(data);
+  show(data);
 }
 
 // GET
 async function getAccount() {
-  const acc = getAcc.value;
+  output.innerHTML = "⏳ Loading...";
 
-  try {
-    let data;
+  const data = await callAPI(`${BASE_URL}/accounts/${getAcc.value}`);
 
-    try {
-      data = await safeFetch(`${BASE_URL}/accounts/${acc}`);
-    } catch {
-      data = await safeFetch(`${BASE_URL}/accounts?accountNumber=${acc}`);
-    }
-
-    renderTable(data);
-
-  } catch {
-    tableContainer.innerHTML = "❌ Error loading data";
-  }
+  show(data);
 }
 
 // UPDATE
 async function updateAccount() {
-  const data = await safeFetch(`${BASE_URL}/accounts/${updAcc.value}`, {
-    method: "PATCH",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
+  output.innerHTML = "⏳ Updating...";
+
+  const data = await callAPI(
+    `${BASE_URL}/accounts/${updAcc.value}`,
+    "PATCH",
+    {
       FullName: updName.value,
       mobileNumber: updMobile.value,
       address: updAddress.value
-    })
-  });
+    }
+  );
 
-  renderTable(data);
+  show(data);
 }
 
 // DELETE
 async function deleteAccount() {
-  const data = await safeFetch(`${BASE_URL}/accounts/${delAcc.value}`, {
-    method: "DELETE"
-  });
+  output.innerHTML = "⏳ Deleting...";
 
-  renderTable(data);
+  const data = await callAPI(
+    `${BASE_URL}/accounts/${delAcc.value}`,
+    "DELETE"
+  );
+
+  show(data);
 }
