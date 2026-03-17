@@ -1,7 +1,9 @@
 const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-// COMMON API
+// API CALL
 async function callAPI(url, method = "GET", body = null) {
+  status.innerText = "⏳ Processing...";
+
   try {
     const res = await fetch(url, {
       method,
@@ -9,34 +11,58 @@ async function callAPI(url, method = "GET", body = null) {
       body: body ? JSON.stringify(body) : null
     });
 
-    return await res.json();
+    const data = await res.json();
+
+    status.innerText = "✅ Success";
+    return data;
+
   } catch (err) {
-    return { error: "❌ API Error" };
+    status.innerText = "❌ Failed";
+    return { error: "API Error" };
   }
 }
 
-// UI RENDER
+// DISPLAY RESULT
 function showResult(data) {
+
   let html = `<div class="result-card">`;
 
+  // MESSAGE
   if (data.message) {
     html += `<h3>${data.message}</h3>`;
   }
 
+  // ACCOUNT NUMBER
   if (data.accountNumber) {
     html += `<p><b>Account Number:</b> ${data.accountNumber}</p>`;
   }
 
+  // ACCOUNT DETAILS (CREATE RESPONSE)
   if (data.account_data) {
     const a = data.account_data;
 
     html += `
-      <p><b>Name:</b> ${a.FullName}</p>
-      <p><b>DOB:</b> ${a.dateOfBirth}</p>
-      <p><b>Mobile:</b> ${a.mobileNumber}</p>
-      <p><b>Email:</b> ${a.email}</p>
-      <p><b>Address:</b> ${a.address}</p>
-      <p><b>Balance:</b> ${a.totalbalance}</p>
+      <table>
+        <tr><td>Name</td><td>${a.FullName}</td></tr>
+        <tr><td>DOB</td><td>${a.dateOfBirth}</td></tr>
+        <tr><td>Mobile</td><td>${a.mobileNumber}</td></tr>
+        <tr><td>Email</td><td>${a.email}</td></tr>
+        <tr><td>Address</td><td>${a.address}</td></tr>
+        <tr><td>Balance</td><td>${a.totalbalance}</td></tr>
+      </table>
+    `;
+  }
+
+  // GET RESPONSE (if API returns direct object)
+  if (data.FullName) {
+    html += `
+      <table>
+        <tr><td>Name</td><td>${data.FullName}</td></tr>
+        <tr><td>DOB</td><td>${data.dateOfBirth}</td></tr>
+        <tr><td>Mobile</td><td>${data.mobileNumber}</td></tr>
+        <tr><td>Email</td><td>${data.email}</td></tr>
+        <tr><td>Address</td><td>${data.address}</td></tr>
+      </table>
     `;
   }
 
