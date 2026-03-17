@@ -1,14 +1,14 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  font-family: Arial;
   margin: 0;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
   color: white;
 }
 
 header {
   text-align: center;
   padding: 20px;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: bold;
 }
 
@@ -18,57 +18,36 @@ header {
 
 .card {
   background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(10px);
   padding: 15px;
   margin-bottom: 15px;
-  border-radius: 15px;
-  animation: fadeIn 0.6s ease;
+  border-radius: 12px;
 }
 
 input, select {
   width: 100%;
-  padding: 12px;
-  margin: 6px 0;
-  border-radius: 8px;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 6px;
   border: none;
 }
 
 button {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   background: #00c6ff;
   border: none;
-  border-radius: 8px;
-  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.3s;
 }
 
 button:hover {
-  transform: scale(1.05);
   background: #00eaff;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  color: black;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-th, td {
+#output {
+  background: black;
   padding: 10px;
-  border: 1px solid #ddd;
-}
-
-th {
-  background: #004481;
-  color: white;
-}
-
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
+  border-radius: 8px;
+  min-height: 80px;
+  overflow: auto;
 }
