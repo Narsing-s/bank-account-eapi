@@ -21,7 +21,7 @@
     <input id="email" placeholder="Email">
     <input id="address" placeholder="Address">
     <input id="balance" placeholder="Initial Balance">
-    <input id="aadhar" placeholder="Aadhar">
+    <input id="aadhar" placeholder="Aadhar Number">
 
     <select id="bank">
       <option value="SBI">SBI</option>
@@ -32,24 +32,24 @@
       <option value="YES">YES</option>
     </select>
 
-    <button onclick="createAccount()">Create</button>
+    <button onclick="createAccount()">Create Account</button>
   </div>
 
   <!-- GET -->
   <div class="card">
     <h2>Get Account</h2>
     <input id="getAcc" placeholder="Account Number">
-    <button onclick="getAccount()">Fetch</button>
+    <button onclick="getAccount()">Fetch Account</button>
   </div>
 
   <!-- UPDATE -->
   <div class="card">
-    <h2>Update</h2>
+    <h2>Update Account</h2>
     <input id="updAcc" placeholder="Account Number">
-    <input id="updName" placeholder="Name">
+    <input id="updName" placeholder="Full Name">
     <input id="updMobile" placeholder="Mobile">
     <input id="updAddress" placeholder="Address">
-    <button onclick="updateAccount()">Update</button>
+    <button onclick="updateAccount()">Update Account</button>
   </div>
 
   <!-- DELETE -->
@@ -62,6 +62,7 @@
   <!-- RESULT -->
   <div class="card">
     <h2>Result</h2>
+    <div id="status">Ready</div>
     <div id="result"></div>
   </div>
 
