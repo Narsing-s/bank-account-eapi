@@ -1,68 +1,76 @@
-body {
-  font-family: Arial;
-  margin: 0;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: white;
+/* --- keep your existing variables and base styles --- */
+
+/* Floating panel enhancements */
+.floating-panels {
+  perspective: 1200px;
+  perspective-origin: 50% 20%;
 }
 
-header {
-  text-align: center;
-  padding: 20px;
-  font-size: 26px;
-  font-weight: bold;
-  animation: fadeIn 1s ease-in;
+/* Float card base (panels & overlays) */
+.float-card {
+  position: relative;
+  background: rgba(255,255,255,.08);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 30px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(14px) saturate(1.2);
+  transform-style: preserve-3d;
+  animation: slowFloat 6s ease-in-out infinite;
 }
 
-.container {
-  padding: 15px;
+/* Gentle idle float */
+@keyframes slowFloat {
+  0%   { transform: translateY(0px) }
+  50%  { transform: translateY(-6px) }
+  100% { transform: translateY(0px) }
 }
 
-.card {
-  background: rgba(255,255,255,0.1);
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 12px;
-  animation: slideUp 0.5s ease;
+/* Tilt on hover (desktop) */
+.float-card:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) translateY(-2px);
+  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: 0 40px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
 }
 
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 6px;
-  border: none;
+/* Panel appearance refinement */
+.panel.float-card {
+  padding: var(--pad);
+  margin: 20px auto;
 }
 
-button {
-  width: 100%;
-  padding: 10px;
-  background: #00c6ff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
+/* Add a glowing border animation ring */
+.float-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, transparent, rgba(0,198,255,.25), rgba(255,97,210,.25), transparent);
+  filter: blur(16px);
+  opacity: .18;
+  z-index: -1;
+  animation: ringGlow 8s linear infinite;
+}
+@keyframes ringGlow {
+  from { transform: rotate(0deg) }
+  to   { transform: rotate(360deg) }
 }
 
-button:hover {
-  background: #00eaff;
-  transform: scale(1.05);
+/* Overlay float look */
+.overlay-card.float-card {
+  width: min(900px, 92vw);
+  max-height: 80vh;
+  overflow: auto;
 }
 
-.result-card {
-  background: white;
-  color: black;
-  padding: 12px;
-  border-radius: 10px;
-  margin-top: 10px;
-  animation: fadeIn 0.5s ease-in;
+/* Make bank card float too */
+.bankCard {
+  animation: slowFloat 7s ease-in-out infinite;
 }
 
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
+/* Optional parallax max tilt on pointer move (script adds inline transform) */
+.parallax-tilt {
+  will-change: transform;
 }
 
-@keyframes slideUp {
-  from {transform: translateY(20px); opacity: 0;}
-  to {transform: translateY(0); opacity: 1;}
-}
+/* Reduced motion respect (kept) */
+html.rm * { animation: none !important; transition: none !important; }
