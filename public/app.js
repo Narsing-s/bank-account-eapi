@@ -1,10 +1,29 @@
 const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-// COMMON FETCH
+// SAFE PARSER (handles all bad cases)
+function parseResponse(text) {
+  if (!text || text.trim() === "") return { message: "Empty response" };
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    try {
+      // fix broken JSON like }{
+      const fixed = text.replace(/}{/g, "}|SPLIT|{").split("|SPLIT|");
+      return fixed.map(x => JSON.parse(x));
+    } catch {
+      return { raw: text };
+    }
+  }
+}
+
+// COMMON API CALL
 async function callAPI(url, method = "GET", body = null) {
+  status.innerText = "⏳ Processing...";
+
   try {
     const res = await fetch(url, {
-      method: method,
+      method,
       headers: {
         "Content-Type": "application/json"
       },
@@ -13,28 +32,26 @@ async function callAPI(url, method = "GET", body = null) {
 
     const text = await res.text();
 
-    console.log("RAW RESPONSE:", text);
+    console.log("RAW:", text);
 
-    try {
-      return JSON.parse(text);
-    } catch {
-      return text;
-    }
+    const data = parseResponse(text);
+
+    status.innerText = "✅ Success";
+    return data;
 
   } catch (err) {
-    return { error: "❌ Failed to connect API" };
+    status.innerText = "❌ API Failed";
+    return { error: err.message };
   }
 }
 
-// SHOW OUTPUT
+// DISPLAY
 function show(data) {
-  output.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+  output.textContent = JSON.stringify(data, null, 2);
 }
 
 // CREATE
 async function createAccount() {
-  output.innerHTML = "⏳ Creating...";
-
   const data = await callAPI(
     `${BASE_URL}/accounts?adharNumber=${aadhar.value}&bankName=${bank.value}`,
     "POST",
@@ -52,17 +69,15 @@ async function createAccount() {
 
 // GET
 async function getAccount() {
-  output.innerHTML = "⏳ Loading...";
-
-  const data = await callAPI(`${BASE_URL}/accounts/${getAcc.value}`);
+  const data = await callAPI(
+    `${BASE_URL}/accounts/${getAcc.value}`
+  );
 
   show(data);
 }
 
 // UPDATE
 async function updateAccount() {
-  output.innerHTML = "⏳ Updating...";
-
   const data = await callAPI(
     `${BASE_URL}/accounts/${updAcc.value}`,
     "PATCH",
@@ -78,8 +93,6 @@ async function updateAccount() {
 
 // DELETE
 async function deleteAccount() {
-  output.innerHTML = "⏳ Deleting...";
-
   const data = await callAPI(
     `${BASE_URL}/accounts/${delAcc.value}`,
     "DELETE"
