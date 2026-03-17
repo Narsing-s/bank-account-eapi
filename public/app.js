@@ -1,26 +1,18 @@
 const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-// COMMON FETCH HANDLER (FIXES YOUR ISSUE)
+// SAFE FETCH (handles bad JSON)
 async function safeFetch(url, options = {}) {
-  try {
-    const res = await fetch(url, options);
+  const res = await fetch(url, options);
+  const text = await res.text();
 
-    const text = await res.text(); // IMPORTANT
+  console.log("RAW:", text);
 
-    console.log("RAW RESPONSE:", text);
+  const fixed = text
+    .replace(/}{/g, "}#SPLIT#{")
+    .split("#SPLIT#")
+    .map(x => JSON.parse(x));
 
-    // Fix multiple JSON issue
-    const fixed = text
-      .replace(/}{/g, "}#SPLIT#{")
-      .split("#SPLIT#")
-      .map(x => JSON.parse(x));
-
-    return fixed;
-
-  } catch (err) {
-    console.error("Fetch Error:", err);
-    throw err;
-  }
+  return fixed;
 }
 
 // RENDER TABLE
@@ -57,21 +49,16 @@ function renderTable(data) {
 
 // CREATE
 async function createAccount() {
-  document.getElementById("tableContainer").innerText = "⏳ Creating...";
-
   const payload = {
-    FullName: document.getElementById("name").value,
-    dateOfBirth: document.getElementById("dob").value,
-    mobileNumber: document.getElementById("mobile").value,
-    email: document.getElementById("email").value,
-    address: document.getElementById("address").value
+    FullName: name.value,
+    dateOfBirth: dob.value,
+    mobileNumber: mobile.value,
+    email: email.value,
+    address: address.value
   };
 
-  const aadhar = document.getElementById("aadhar").value;
-  const bank = document.getElementById("bank").value;
-
   const data = await safeFetch(
-    `${BASE_URL}/accounts?adharNumber=${aadhar}&bankName=${bank}`,
+    `${BASE_URL}/accounts?adharNumber=${aadhar.value}&bankName=${bank.value}`,
     {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -84,14 +71,7 @@ async function createAccount() {
 
 // GET
 async function getAccount() {
-  const acc = document.getElementById("getAcc").value;
-
-  if (!acc) {
-    alert("Enter Account Number");
-    return;
-  }
-
-  document.getElementById("tableContainer").innerText = "⏳ Fetching...";
+  const acc = getAcc.value;
 
   try {
     let data;
@@ -104,28 +84,21 @@ async function getAccount() {
 
     renderTable(data);
 
-  } catch (err) {
-    document.getElementById("tableContainer").innerText =
-      "❌ Error loading data";
+  } catch {
+    tableContainer.innerHTML = "❌ Error loading data";
   }
 }
 
 // UPDATE
 async function updateAccount() {
-  const acc = document.getElementById("updAcc").value;
-
-  const payload = {
-    FullName: document.getElementById("updName").value,
-    mobileNumber: document.getElementById("updMobile").value,
-    address: document.getElementById("updAddress").value
-  };
-
-  document.getElementById("tableContainer").innerText = "⏳ Updating...";
-
-  const data = await safeFetch(`${BASE_URL}/accounts/${acc}`, {
+  const data = await safeFetch(`${BASE_URL}/accounts/${updAcc.value}`, {
     method: "PATCH",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      FullName: updName.value,
+      mobileNumber: updMobile.value,
+      address: updAddress.value
+    })
   });
 
   renderTable(data);
@@ -133,11 +106,7 @@ async function updateAccount() {
 
 // DELETE
 async function deleteAccount() {
-  const acc = document.getElementById("delAcc").value;
-
-  document.getElementById("tableContainer").innerText = "⏳ Deleting...";
-
-  const data = await safeFetch(`${BASE_URL}/accounts/${acc}`, {
+  const data = await safeFetch(`${BASE_URL}/accounts/${delAcc.value}`, {
     method: "DELETE"
   });
 
