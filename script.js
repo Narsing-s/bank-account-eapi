@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8081"; // change if deployed
+const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
 function show(data) {
   document.getElementById("output").innerText =
@@ -19,11 +19,12 @@ function createAccount() {
 
   fetch(`${BASE_URL}/accounts`, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   })
-  .then(res => res.json())
-  .then(show);
+    .then(res => res.json())
+    .then(show)
+    .catch(err => console.error(err));
 }
 
 // GET
@@ -32,7 +33,8 @@ function getAccount() {
 
   fetch(`${BASE_URL}/accounts/${acc}`)
     .then(res => res.json())
-    .then(show);
+    .then(show)
+    .catch(err => console.error(err));
 }
 
 // UPDATE
@@ -47,11 +49,12 @@ function updateAccount() {
 
   fetch(`${BASE_URL}/accounts/${acc}`, {
     method: "PATCH",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   })
-  .then(res => res.json())
-  .then(show);
+    .then(res => res.json())
+    .then(show)
+    .catch(err => console.error(err));
 }
 
 // DELETE
@@ -61,6 +64,7 @@ function deleteAccount() {
   fetch(`${BASE_URL}/accounts/${acc}`, {
     method: "DELETE"
   })
-  .then(res => res.json())
-  .then(show);
-}s
+    .then(res => res.json())
+    .then(show)
+    .catch(err => console.error(err));
+}
