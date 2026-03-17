@@ -1,56 +1,67 @@
-const express = require("express");
-const cors = require("cors");
-const puppeteer = require("puppeteer");
+const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-const app = express();
-app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+function show(data) {
+  document.getElementById("output").innerText =
+    JSON.stringify(data, null, 2);
+}
 
-// Health check
-app.get("/", (req, res) => {
-  res.send("Bank PDF Service Running 🚀");
-});
+// CREATE
+function createAccount() {
+  const payload = {
+    FullName: document.getElementById("name").value,
+    dateOfBirth: document.getElementById("dob").value,
+    mobileNumber: document.getElementById("mobile").value,
+    email: document.getElementById("email").value,
+    address: document.getElementById("address").value
+  };
 
-// PDF API
-app.post("/download-pdf", async (req, res) => {
-  try {
-    const { html } = req.body;
+  const aadhar = document.getElementById("aadhar").value;
+  const bank = document.getElementById("bank").value;
 
-    if (!html) {
-      return res.status(400).send("HTML content is required");
-    }
+  fetch(`${BASE_URL}/accounts?adharNumber=${aadhar}&bankName=${bank}`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(show);
+}
 
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
+// GET
+function getAccount() {
+  const acc = document.getElementById("getAcc").value;
 
-    const page = await browser.newPage();
+  fetch(`${BASE_URL}/accounts/${acc}`)
+    .then(res => res.json())
+    .then(show);
+}
 
-    await page.setContent(html, { waitUntil: "networkidle0" });
+// UPDATE
+function updateAccount() {
+  const acc = document.getElementById("updAcc").value;
 
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true
-    });
+  const payload = {
+    FullName: document.getElementById("updName").value,
+    mobileNumber: document.getElementById("updMobile").value,
+    address: document.getElementById("updAddress").value
+  };
 
-    await browser.close();
+  fetch(`${BASE_URL}/accounts/${acc}`, {
+    method: "PATCH",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(show);
+}
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": "attachment; filename=bank-statement.pdf"
-    });
+// DELETE
+function deleteAccount() {
+  const acc = document.getElementById("delAcc").value;
 
-    res.send(pdf);
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error generating PDF");
-  }
-});
-
-// Start server
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+  fetch(`${BASE_URL}/accounts/${acc}`, {
+    method: "DELETE"
+  })
+  .then(res => res.json())
+  .then(show);
+}
