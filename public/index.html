@@ -1,56 +1,59 @@
-const express = require("express");
-const cors = require("cors");
-const puppeteer = require("puppeteer");
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🏦 Bank App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
 
-const app = express();
-app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+<body>
 
-// Health check
-app.get("/", (req, res) => {
-  res.send("Bank PDF Service Running 🚀");
-});
+<header>🏦 Bank Account App</header>
 
-// PDF API
-app.post("/download-pdf", async (req, res) => {
-  try {
-    const { html } = req.body;
+<div class="container">
 
-    if (!html) {
-      return res.status(400).send("HTML content is required");
-    }
+  <!-- CREATE -->
+  <div class="card">
+    <h2>Create Account</h2>
+    <input id="name" placeholder="Full Name">
+    <input id="dob" placeholder="YYYY-MM-DD">
+    <input id="mobile" placeholder="Mobile Number">
+    <input id="email" placeholder="Email">
+    <input id="address" placeholder="Address">
+    <input id="aadhar" placeholder="Aadhar Number">
+    <input id="bank" placeholder="Bank Name (HDFC/SBI)">
+    <button onclick="createAccount()">Create</button>
+  </div>
 
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
+  <!-- GET -->
+  <div class="card">
+    <h2>Get Account</h2>
+    <input id="getAcc" placeholder="Account Number">
+    <button onclick="getAccount()">Fetch</button>
+  </div>
 
-    const page = await browser.newPage();
+  <!-- UPDATE -->
+  <div class="card">
+    <h2>Update Account</h2>
+    <input id="updAcc" placeholder="Account Number">
+    <input id="updName" placeholder="Full Name">
+    <input id="updMobile" placeholder="Mobile">
+    <input id="updAddress" placeholder="Address">
+    <button onclick="updateAccount()">Update</button>
+  </div>
 
-    await page.setContent(html, { waitUntil: "networkidle0" });
+  <!-- DELETE -->
+  <div class="card">
+    <h2>Delete Account</h2>
+    <input id="delAcc" placeholder="Account Number">
+    <button onclick="deleteAccount()">Delete</button>
+  </div>
 
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true
-    });
+  <pre id="output"></pre>
 
-    await browser.close();
+</div>
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": "attachment; filename=bank-statement.pdf"
-    });
+<script src="app.js"></script>
 
-    res.send(pdf);
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error generating PDF");
-  }
-});
-
-// Start server
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+</body>
+</html>
