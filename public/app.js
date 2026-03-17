@@ -1,53 +1,46 @@
 const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-// SAFE PARSER (handles all bad cases)
-function parseResponse(text) {
-  if (!text || text.trim() === "") return { message: "Empty response" };
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    try {
-      // fix broken JSON like }{
-      const fixed = text.replace(/}{/g, "}|SPLIT|{").split("|SPLIT|");
-      return fixed.map(x => JSON.parse(x));
-    } catch {
-      return { raw: text };
-    }
-  }
-}
-
-// COMMON API CALL
+// COMMON API
 async function callAPI(url, method = "GET", body = null) {
-  status.innerText = "⏳ Processing...";
-
   try {
     const res = await fetch(url, {
       method,
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: body ? JSON.stringify(body) : null
     });
 
-    const text = await res.text();
-
-    console.log("RAW:", text);
-
-    const data = parseResponse(text);
-
-    status.innerText = "✅ Success";
-    return data;
-
+    return await res.json();
   } catch (err) {
-    status.innerText = "❌ API Failed";
-    return { error: err.message };
+    return { error: "❌ API Error" };
   }
 }
 
-// DISPLAY
-function show(data) {
-  output.textContent = JSON.stringify(data, null, 2);
+// UI RENDER
+function showResult(data) {
+  let html = `<div class="result-card">`;
+
+  if (data.message) {
+    html += `<h3>${data.message}</h3>`;
+  }
+
+  if (data.accountNumber) {
+    html += `<p><b>Account Number:</b> ${data.accountNumber}</p>`;
+  }
+
+  if (data.account_data) {
+    const a = data.account_data;
+
+    html += `
+      <p><b>Name:</b> ${a.FullName}</p>
+      <p><b>DOB:</b> ${a.dateOfBirth}</p>
+      <p><b>Mobile:</b> ${a.mobileNumber}</p>
+      <p><b>Email:</b> ${a.email}</p>
+      <p><b>Address:</b> ${a.address}</p>
+      <p><b>Balance:</b> ${a.totalbalance}</p>
+    `;
+  }
+
+  result.innerHTML = html + "</div>";
 }
 
 // CREATE
@@ -60,11 +53,12 @@ async function createAccount() {
       dateOfBirth: dob.value,
       mobileNumber: mobile.value,
       email: email.value,
-      address: address.value
+      address: address.value,
+      totalbalance: balance.value
     }
   );
 
-  show(data);
+  showResult(data);
 }
 
 // GET
@@ -73,7 +67,7 @@ async function getAccount() {
     `${BASE_URL}/accounts/${getAcc.value}`
   );
 
-  show(data);
+  showResult(data);
 }
 
 // UPDATE
@@ -88,7 +82,7 @@ async function updateAccount() {
     }
   );
 
-  show(data);
+  showResult(data);
 }
 
 // DELETE
@@ -98,5 +92,5 @@ async function deleteAccount() {
     "DELETE"
   );
 
-  show(data);
+  showResult(data);
 }
