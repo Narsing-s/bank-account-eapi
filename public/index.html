@@ -1,28 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🏦 Smart Bank App</title>
+  <title>🏦 Bank App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header>🏦 Smart Banking Dashboard</header>
+<header>🏦 Smart Banking</header>
 
 <div class="container">
 
-  <!-- CREATE -->
   <div class="card">
     <h2>Create Account</h2>
     <input id="name" placeholder="Full Name">
     <input id="dob" placeholder="YYYY-MM-DD">
-    <input id="mobile" placeholder="Mobile Number">
+    <input id="mobile" placeholder="Mobile">
     <input id="email" placeholder="Email">
     <input id="address" placeholder="Address">
-    <input id="aadhar" placeholder="Aadhar Number">
+    <input id="aadhar" placeholder="Aadhar">
 
-    <!-- ENUM DROPDOWN -->
     <select id="bank">
       <option value="HDFC">HDFC</option>
       <option value="SBI">SBI</option>
@@ -33,34 +31,30 @@
     <button onclick="createAccount()">Create</button>
   </div>
 
-  <!-- GET -->
   <div class="card">
     <h2>Get Account</h2>
     <input id="getAcc" placeholder="Account Number">
     <button onclick="getAccount()">Fetch</button>
   </div>
 
-  <!-- UPDATE -->
   <div class="card">
-    <h2>Update Account</h2>
+    <h2>Update</h2>
     <input id="updAcc" placeholder="Account Number">
-    <input id="updName" placeholder="Full Name">
+    <input id="updName" placeholder="Name">
     <input id="updMobile" placeholder="Mobile">
     <input id="updAddress" placeholder="Address">
     <button onclick="updateAccount()">Update</button>
   </div>
 
-  <!-- DELETE -->
   <div class="card">
-    <h2>Delete Account</h2>
+    <h2>Delete</h2>
     <input id="delAcc" placeholder="Account Number">
     <button onclick="deleteAccount()">Delete</button>
   </div>
 
-  <!-- OUTPUT -->
   <div class="card">
-    <h2>Account Details</h2>
-    <div id="tableContainer">🚀 Ready...</div>
+    <h2>Response</h2>
+    <div id="output">🚀 Ready</div>
   </div>
 
 </div>
