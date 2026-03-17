@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🏦 Bank App</title>
+  <title>🏦 Banking App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -12,6 +12,7 @@
 
 <div class="container">
 
+  <!-- CREATE -->
   <div class="card">
     <h2>Create Account</h2>
     <input id="name" placeholder="Full Name">
@@ -19,24 +20,29 @@
     <input id="mobile" placeholder="Mobile">
     <input id="email" placeholder="Email">
     <input id="address" placeholder="Address">
+    <input id="balance" placeholder="Initial Balance">
     <input id="aadhar" placeholder="Aadhar">
 
     <select id="bank">
-      <option value="HDFC">HDFC</option>
       <option value="SBI">SBI</option>
+      <option value="HDFC">HDFC</option>
       <option value="ICICI">ICICI</option>
       <option value="AXIS">AXIS</option>
+      <option value="APGVB">AXIS</option>
+      <option value="YES">AXIS</option>
     </select>
 
     <button onclick="createAccount()">Create</button>
   </div>
 
+  <!-- GET -->
   <div class="card">
     <h2>Get Account</h2>
     <input id="getAcc" placeholder="Account Number">
     <button onclick="getAccount()">Fetch</button>
   </div>
 
+  <!-- UPDATE -->
   <div class="card">
     <h2>Update</h2>
     <input id="updAcc" placeholder="Account Number">
@@ -46,16 +52,17 @@
     <button onclick="updateAccount()">Update</button>
   </div>
 
+  <!-- DELETE -->
   <div class="card">
-    <h2>Delete</h2>
+    <h2>Deactivate Account</h2>
     <input id="delAcc" placeholder="Account Number">
-    <button onclick="deleteAccount()">Delete</button>
+    <button onclick="deleteAccount()">Deactivate</button>
   </div>
 
+  <!-- RESULT -->
   <div class="card">
-    <h2>Response</h2>
-    <div id="status">🚀 Ready</div>
-    <pre id="output"></pre>
+    <h2>Result</h2>
+    <div id="result"></div>
   </div>
 
 </div>
