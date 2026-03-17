@@ -1,43 +1,64 @@
 const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-// API CALL
+// COMMON API CALL
 async function callAPI(url, method = "GET", body = null) {
-  status.innerText = "⏳ Processing...";
+
+  status.innerText = "⏳ Loading...";
 
   try {
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: body ? JSON.stringify(body) : null
-    });
+    const options = {
+      method: method
+    };
 
-    const data = await res.json();
+    // ⚠️ ONLY add headers/body when needed (prevents OPTIONS issue)
+    if (body) {
+      options.headers = {
+        "Content-Type": "application/json"
+      };
+      options.body = JSON.stringify(body);
+    }
+
+    const res = await fetch(url, options);
+
+    // HANDLE NON-JSON
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = { message: "No JSON response" };
+    }
+
+    if (!res.ok) {
+      throw new Error(data.message || "API Error");
+    }
 
     status.innerText = "✅ Success";
     return data;
 
   } catch (err) {
-    status.innerText = "❌ Failed";
-    return { error: "API Error" };
+    status.innerText = "❌ " + err.message;
+    return { error: err.message };
   }
 }
 
-// DISPLAY RESULT
+// SHOW RESULT
 function showResult(data) {
+
+  if (data.error) {
+    result.innerHTML = `<div class="result-card">❌ ${data.error}</div>`;
+    return;
+  }
 
   let html = `<div class="result-card">`;
 
-  // MESSAGE
   if (data.message) {
     html += `<h3>${data.message}</h3>`;
   }
 
-  // ACCOUNT NUMBER
   if (data.accountNumber) {
-    html += `<p><b>Account Number:</b> ${data.accountNumber}</p>`;
+    html += `<p><b>Account:</b> ${data.accountNumber}</p>`;
   }
 
-  // ACCOUNT DETAILS (CREATE RESPONSE)
   if (data.account_data) {
     const a = data.account_data;
 
@@ -53,7 +74,6 @@ function showResult(data) {
     `;
   }
 
-  // GET RESPONSE (if API returns direct object)
   if (data.FullName) {
     html += `
       <table>
@@ -83,7 +103,6 @@ async function createAccount() {
       totalbalance: balance.value
     }
   );
-
   showResult(data);
 }
 
@@ -92,7 +111,6 @@ async function getAccount() {
   const data = await callAPI(
     `${BASE_URL}/accounts/${getAcc.value}`
   );
-
   showResult(data);
 }
 
@@ -107,7 +125,6 @@ async function updateAccount() {
       address: updAddress.value
     }
   );
-
   showResult(data);
 }
 
@@ -117,6 +134,5 @@ async function deleteAccount() {
     `${BASE_URL}/accounts/${delAcc.value}`,
     "DELETE"
   );
-
   showResult(data);
 }
