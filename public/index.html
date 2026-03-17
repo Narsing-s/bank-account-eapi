@@ -1,71 +1,217 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>🏦 Banking App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <title>Bank Account Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1024" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
-
 <body>
+  <!-- Animated backgrounds -->
+  <div class="bg-gradient"></div>
+  <div class="bg-aurora"></div>
+  <div class="bg-particles" aria-hidden="true"></div>
 
-<header>🏦 Smart Banking Dashboard</header>
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">🏦</div>
+      <div>
+        <div class="brand-title">Bank Account Dashboard</div>
+        <div class="brand-sub">User friendly bank portal</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btnSettings" class="icon-btn" aria-label="Settings">⚙️</button>
+      <div class="status" id="status" aria-live="polite">
+        <span class="dot offline" id="statusDot" aria-hidden="true"></span>
+        <span id="statusText">Offline</span>
+      </div>
+    </div>
+  </header>
 
-<div class="container">
+  <nav class="tabs" role="tablist" aria-label="Operations">
+    <button class="tab-btn active" data-tab="create" role="tab" aria-selected="true">Create</button>
+    <button class="tab-btn" data-tab="search" role="tab">Search</button>
+    <button class="tab-btn" data-tab="update" role="tab">Update</button>
+    <button class="tab-btn" data-tab="delete" role="tab">Delete</button>
+  </nav>
 
-  <!-- CREATE -->
-  <div class="card">
-    <h2>Create Account</h2>
-    <input id="name" placeholder="Full Name">
-    <input id="dob" placeholder="YYYY-MM-DD">
-    <input id="mobile" placeholder="Mobile">
-    <input id="email" placeholder="Email">
-    <input id="address" placeholder="Address">
-    <input id="aadhar" placeholder="Aadhar Number">
+  <main class="container floating-panels">
+    <!-- CREATE -->
+    <section id="create" class="panel active float-card" role="tabpanel" aria-labelledby="Create Account">
+      <h2>Create Account</h2>
+      <div class="grid">
+        <label>Full Name
+          <input id="name" placeholder="e.g., Jane Doe" maxlength="80" required />
+        </label>
+        <label>Date of Birth (YYYYMMDD)
+          <input id="dob" placeholder="19900131" maxlength="8" inputmode="numeric" />
+        </label>
+        <label>Mobile
+          <input id="mobile" placeholder="10-digit number" maxlength="15" inputmode="tel" />
+        </label>
+        <label>Email
+          <input id="email" placeholder="name@example.com" type="email" />
+        </label>
+        <label>Address
+          <input id="address" placeholder="Street, City" />
+        </label>
+        <label>Aadhaar (12 digits)
+          <input id="aadhaar" placeholder="123412341234" maxlength="12" inputmode="numeric" />
+        </label>
+        <label>Bank
+          <select id="bank" aria-label="Bank Name">
+            <option>SBI</option>
+            <option>HDFC</option>
+            <option>APGIVB</option>
+            <option>AXIS</option>
+            <option>ICICI</option>
+          </select>
+        </label>
+      </div>
 
-    <select id="bank">
-      <option value="SBI">SBI</option>
-      <option value="HDFC">HDFC</option>
-      <option value="ICICI">ICICI</option>
-      <option value="AXIS">AXIS</option>
-    </select>
+      <div class="action-bar" data-for="create">
+        <div class="action-bar-inner">
+          <button id="btnCreate" class="primary">Create Account</button>
+        </div>
+      </div>
+    </section>
 
-    <button onclick="createAccount()">Create Account</button>
+    <!-- SEARCH -->
+    <section id="search" class="panel float-card" role="tabpanel">
+      <h2>Search Account</h2>
+      <div class="grid">
+        <label>Account Number
+          <input id="getAcc" placeholder="Enter account number" />
+        </label>
+      </div>
+
+      <div class="action-bar" data-for="search">
+        <div class="action-bar-inner">
+          <button id="btnSearch" class="primary">Search</button>
+        </div>
+      </div>
+
+      <div id="bankCard" class="bankCard placeholder" aria-live="polite">
+        <div class="skeleton title"></div>
+        <div class="skeleton line"></div>
+        <div class="skeleton line"></div>
+      </div>
+    </section>
+
+    <!-- UPDATE -->
+    <section id="update" class="panel float-card" role="tabpanel">
+      <h2>Update Account</h2>
+      <div class="grid">
+        <label>Account Number
+          <input id="updateAcc" placeholder="Enter account number" />
+        </label>
+        <label>Full Name
+          <input id="updateName" placeholder="New full name" />
+        </label>
+        <label>Email
+          <input id="updateEmail" placeholder="name@example.com" type="email" />
+        </label>
+        <label>Mobile
+          <input id="updateMobile" placeholder="10-digit number" inputmode="tel" />
+        </label>
+      </div>
+
+      <div class="action-bar" data-for="update">
+        <div class="action-bar-inner">
+          <button id="btnUpdate" class="primary">Update</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DELETE -->
+    <section id="delete" class="panel float-card" role="tabpanel">
+      <h2>Delete Account</h2>
+      <div class="grid">
+        <label>Account Number
+          <input id="deleteAcc" placeholder="Enter account number" />
+        </label>
+      </div>
+
+      <div class="action-bar" data-for="delete">
+        <div class="action-bar-inner">
+          <button id="btnDelete" class="danger">Delete</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toasts -->
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader hidden" role="alert" aria-busy="true" aria-live="polite">
+    <div class="spinner"></div>
   </div>
 
-  <!-- GET -->
-  <div class="card">
-    <h2>Get Account</h2>
-    <input id="getAcc" placeholder="Account Number">
-    <button onclick="getAccount()">Fetch Account</button>
+  <!-- Response Viewer -->
+  <div id="respOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="respTitle">
+    <div class="overlay-card float-card">
+      <div class="overlay-head">
+        <h3 id="respTitle">Response</h3>
+        <div class="overlay-actions">
+          <button id="btnCopyResp" class="chip">Copy</button>
+          <button id="btnCloseResp" class="chip">Close</button>
+        </div>
+      </div>
+      <pre id="respBody" class="result"></pre>
+    </div>
   </div>
 
-  <!-- UPDATE -->
-  <div class="card">
-    <h2>Update Account</h2>
-    <input id="updAcc" placeholder="Account Number">
-    <input id="updName" placeholder="Full Name">
-    <input id="updMobile" placeholder="Mobile">
-    <input id="updAddress" placeholder="Address">
-    <button onclick="updateAccount()">Update</button>
-  </div>
+  <!-- Settings Drawer (languages removed) -->
+  <aside id="settings" class="settings hidden" aria-labelledby="settingsTitle" role="dialog" aria-modal="true">
+    <div class="settings-card float-card">
+      <div class="settings-head">
+        <h3 id="settingsTitle">Settings</h3>
+        <button id="btnCloseSettings" class="chip">Close</button>
+      </div>
 
-  <!-- DELETE -->
-  <div class="card">
-    <h2>Deactivate Account</h2>
-    <input id="delAcc" placeholder="Account Number">
-    <button onclick="deleteAccount()">Deactivate</button>
-  </div>
+      <div class="settings-group">
+        <label>Theme</label>
+        <div class="chips">
+          <button class="chip" data-theme="system">System</button>
+          <button class="chip" data-theme="light">Light</button>
+          <button class="chip" data-theme="dark">Dark</button>
+        </div>
+      </div>
 
-  <!-- RESULT -->
-  <div class="card">
-    <h2>Result</h2>
-    <div id="status">Ready</div>
-    <div id="result"></div>
-  </div>
+      <div class="settings-group toggles">
+        <label>
+          <input type="checkbox" id="toggleMotion" />
+          <span>Reduce Motion</span>
+        </label>
+        <label>
+          <input type="checkbox" id="toggleContrast" />
+          <span>High Contrast</span>
+        </label>
+      </div>
+    </div>
+  </aside>
 
-</div>
+  <!-- Confetti Layer -->
+  <div id="fx"></div>
 
-<script src="app.js"></script>
+  <!-- Config & App scripts -->
+  <script src="/config.js"></script>
+  <script>
+    // All fetches go via the local proxy by default
+    window.API_PREFIX = "/api";
+  </script>
+  <script src="/script.js"></script>
 
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(console.error);
+      });
+    }
+  </script>
 </body>
 </html>
