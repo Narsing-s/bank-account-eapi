@@ -8,8 +8,9 @@ body {
 header {
   text-align: center;
   padding: 20px;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
+  animation: fadeIn 1s ease-in;
 }
 
 .container {
@@ -21,6 +22,7 @@ header {
   padding: 15px;
   margin-bottom: 15px;
   border-radius: 12px;
+  animation: slideUp 0.5s ease;
 }
 
 input, select {
@@ -38,10 +40,12 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 button:hover {
   background: #00eaff;
+  transform: scale(1.05);
 }
 
 .result-card {
@@ -50,14 +54,15 @@ button:hover {
   padding: 12px;
   border-radius: 10px;
   margin-top: 10px;
+  animation: fadeIn 0.5s ease-in;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
 }
 
-td {
-  padding: 6px;
-  border-bottom: 1px solid #ddd;
+@keyframes slideUp {
+  from {transform: translateY(20px); opacity: 0;}
+  to {transform: translateY(0); opacity: 1;}
 }
