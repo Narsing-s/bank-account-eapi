@@ -1,0 +1,243 @@
+#%RAML 1.0
+title: bank-account-eapi
+version: v1
+
+protocols:
+  - HTTP
+  - HTTPS
+
+/accounts:
+  post:
+    description: Create a new bank account using customer details. A unique account number will be generated.
+    queryParameters:
+      adharNumber:
+        type: string
+        required: true
+        minLength: 12
+        maxLength: 12
+      bankName:
+        required: true
+        type: string
+        enum:
+          - HDFC
+          - SBI
+          - APGIVB
+          - AXIS
+          - ICICI
+          - YES
+    body:
+      application/json:
+        type: object
+        properties:
+          FullName:
+            type: string
+            required: true
+          dateOfBirth:
+            type: date-only
+            required: true
+          mobileNumber:
+            type: string
+            required: true
+          email:
+            type: string
+            required: true
+          address:
+            type: string
+            required: true
+          adharNumber:
+            type: string
+            required: false
+        example:
+          {
+            "FullName": "Narsingarao Beesetti",
+            "dateOfBirth": "2000-06-06",
+            "mobileNumber": "9874561230",
+            "email": "narsingbeesetti@gmail.com",
+            "address": "Chowduvada, 123/5"
+          }
+    responses:
+      201:
+        description: Account successfully created
+        body:
+          application/json:
+            example:
+              {
+                "message": "Account created successfully",
+                "accountNumber": "63412021212"
+              }
+      400:
+        description: Bad request due to missing or invalid data
+        body:
+          application/json:
+            type: object
+            properties:
+              message:
+                required: true
+                type: string
+                example: "Invalid input.Please provide all required fields."
+                  
+            example:
+              {
+                "message": "Invalid input.Please provide all required fields."
+              }
+      500:
+        description: Internal server error
+        body:
+          application/json:
+            type: object
+            properties:
+              message:
+                required: true
+                type: string
+                example: "An unexpected error occurred. Please try again later."
+                   
+            example:
+              {
+                "message": "An unexpected error occurred. Please try again later."
+              }
+  /{accountNumber}:
+    get:
+      description: Get account details by account number.
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                {
+                  "accountNumber": "634120212121",
+                  "FullName": "Narsingarao Beesetti",
+                  "dateOfBirth": "2000-06-06",
+                  "mobileNumber": "9874561230",
+                  "email": "narsingbeesetti@gmail.com",
+                  "address": "chowduvada, 256/3"
+                }      
+        404:
+          body:
+            application/json:
+              type: object
+              properties:
+                message:
+                  type: string
+                  required: true
+                  example: "Account not found"
+              example:
+                {
+                  "message": "Account not found"
+                }
+    patch:
+      description: Update details of an existing bank account using account number.
+      body:
+        application/json:
+          type: object
+          properties:
+            FullName:
+              required: true
+              type: string
+              example: "update Name"
+            mobileNumber:
+              required: true
+              type: string
+              example: "update Name"
+            address:
+              required: true
+              type: string
+              example: "update Name"
+          example:
+            {
+              "FullName": "Updated Name",
+              "address": "New Address",
+              "mobileNumber": "9856742613"
+            }
+      responses:
+        200:
+          description: Account updated successfully
+          body:
+            application/json:
+              type: object
+              properties:
+                message:
+                  required: true
+                  type: string
+                  example: "Account details updated successfully"
+                accountNumber:
+                  required: true
+                  type: string
+                  example: "634120212121"
+                  maxLength: 12 
+                  minLength: 12    
+              example:
+                {
+                  "message": "Account details updated successfully",
+                  "accountNumber": "634120212121"
+                }
+        404:
+          description: Account not found
+          body:
+            application/json:
+              type: object
+              properties:
+                message:
+                  type: string
+                  required: true
+                  example: "Account not found"
+                    
+              example:
+                {
+                  "message": "Account not found"
+                }
+        400:
+          description: Invalid update request
+          body:
+            application/json:
+              type: object
+              properties:
+                message:
+                  required: true
+                  type: string
+                  example: "No valid fileds provided for update"       
+              example:
+                {
+                  "message": "No valid fileds provided for update"
+                }
+    delete:
+      description: Deactivate a bank account by account number.
+      responses:
+        200:
+          body:
+            application/json:
+              type: object
+              properties:
+                message:
+                  required: true
+                  type: string
+                  example: "Account deactivated successfully"
+                accountNumber:
+                  required: true
+                  type: string
+                  example: "634120212121"   
+                  maxLength: 12
+                  minLength: 12
+              example:
+                {
+                  "message": "Account deactivated successfully",
+                  "accountNumber": "634120212121"
+                }
+        404:
+          body:
+            application/json:
+              type: object
+              properties:
+                message:
+                  required: true
+                  type: string
+                  example: "Account not found"    
+              example:
+                {
+                  "message": "Account not found"
+                }
+
+
+                
+
+    
+    
