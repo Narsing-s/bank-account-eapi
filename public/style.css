@@ -8,8 +8,7 @@ body {
 header {
   text-align: center;
   padding: 20px;
-  font-size: 22px;
-  font-weight: bold;
+  font-size: 24px;
 }
 
 .container {
@@ -21,6 +20,7 @@ header {
   padding: 15px;
   margin-bottom: 15px;
   border-radius: 10px;
+  animation: fadeIn 0.5s ease;
 }
 
 input {
@@ -40,10 +40,13 @@ button {
   cursor: pointer;
 }
 
+button:hover {
+  background: #00eaff;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
   background: white;
   color: black;
 }
@@ -56,4 +59,9 @@ th, td {
 th {
   background: #004481;
   color: white;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
 }
