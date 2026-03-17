@@ -1,50 +1,7 @@
 const BASE_URL = "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-// SHOW RESPONSE
-function show(data) {
-  document.getElementById("output").innerText =
-    JSON.stringify(data, null, 2);
-}
-
-// LOADING
-function loading() {
-  document.getElementById("output").innerText = "⏳ Loading...";
-}
-
-// ERROR
-function handleError(err) {
-  document.getElementById("output").innerText = "❌ Error: " + err;
-}
-
-// CREATE
-function createAccount() {
-  loading();
-
-  const payload = {
-    FullName: document.getElementById("name").value,
-    dateOfBirth: document.getElementById("dob").value,
-    mobileNumber: document.getElementById("mobile").value,
-    email: document.getElementById("email").value,
-    address: document.getElementById("address").value
-  };
-
-  const aadhar = document.getElementById("aadhar").value;
-  const bank = document.getElementById("bank").value;
-
-  fetch(`${BASE_URL}/accounts?adharNumber=${aadhar}&bankName=${bank}`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(show)
-  .catch(handleError);
-}
-
-// GET (AUTO FIX PATH / QUERY)
+// FETCH ACCOUNT
 function getAccount() {
-  loading();
-
   const acc = document.getElementById("getAcc").value;
 
   if (!acc) {
@@ -52,56 +9,56 @@ function getAccount() {
     return;
   }
 
-  console.log("Fetching:", acc);
+  document.getElementById("tableContainer").innerHTML = "⏳ Loading...";
 
-  // Try PATH param
   fetch(`${BASE_URL}/accounts/${acc}`)
-    .then(res => {
-      if (!res.ok) throw "Trying query param...";
-      return res.json();
+    .then(res => res.text()) // IMPORTANT (handle bad API response)
+    .then(data => {
+      console.log("RAW RESPONSE:", data);
+
+      // FIX: split multiple JSONs
+      const jsonArray = data
+        .replace(/}{/g, "}#SPLIT#{")
+        .split("#SPLIT#")
+        .map(item => JSON.parse(item));
+
+      renderTable(jsonArray);
     })
-    .then(show)
-    .catch(() => {
-      // Fallback to QUERY param
-      fetch(`${BASE_URL}/accounts?accountNumber=${acc}`)
-        .then(res => res.json())
-        .then(show)
-        .catch(handleError);
+    .catch(err => {
+      document.getElementById("tableContainer").innerHTML =
+        "❌ Error fetching data";
+      console.error(err);
     });
 }
 
-// UPDATE
-function updateAccount() {
-  loading();
+// RENDER TABLE
+function renderTable(data) {
+  if (!Array.isArray(data)) data = [data];
 
-  const acc = document.getElementById("updAcc").value;
+  let html = `
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>DOB</th>
+        <th>Mobile</th>
+        <th>Email</th>
+        <th>Address</th>
+      </tr>
+  `;
 
-  const payload = {
-    FullName: document.getElementById("updName").value,
-    mobileNumber: document.getElementById("updMobile").value,
-    address: document.getElementById("updAddress").value
-  };
+  data.forEach(d => {
+    html += `
+      <tr>
+        <td>${d.FullName || ""}</td>
+        <td>${d.dateOfBirth || ""}</td>
+        <td>${d.mobileNumber || ""}</td>
+        <td>${d.email || ""}</td>
+        <td>${d.address || ""}</td>
+      </tr>
+    `;
+  });
 
-  fetch(`${BASE_URL}/accounts/${acc}`, {
-    method: "PATCH",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(show)
-  .catch(handleError);
-}
+  html += "</table>";
 
-// DELETE
-function deleteAccount() {
-  loading();
-
-  const acc = document.getElementById("delAcc").value;
-
-  fetch(`${BASE_URL}/accounts/${acc}`, {
-    method: "DELETE"
-  })
-  .then(res => res.json())
-  .then(show)
-  .catch(handleError);
+  document.getElementById("tableContainer").innerHTML = html;
 }
