@@ -6,10 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b57d0" />
   <link rel="manifest" href="/manifest.json" />
-
-  <!-- Material Symbols for icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:FILL@0..1" rel="stylesheet">
-
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:FILL@0..1&display=swap">
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -19,8 +16,8 @@
       <div class="app-bar__title">
         <span class="material-symbols-rounded" aria-hidden="true">account_balance</span>
         <div class="app-bar__text">
-          <div class="title">Bank</div>
-          <div class="subtitle">Android Material</div>
+          <div class="title" data-i18n="app.title">Bank</div>
+          <div class="subtitle" data-i18n="app.subtitle">Android Material</div>
         </div>
       </div>
       <div class="app-bar__actions">
@@ -35,10 +32,33 @@
     </div>
   </header>
 
+  <!-- LOGIN SHEET (shown until unlocked) -->
+  <div id="loginSheet" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="sheet elevated">
+      <div class="sheet-head">
+        <h3 id="loginTitle" data-i18n="login.title">Secure Login</h3>
+      </div>
+      <div class="section">
+        <div class="field">
+          <label class="label" for="loginUser">Email / Mobile</label>
+          <input id="loginUser" class="text-field" placeholder="e.g., jane@bank.com" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="btnPasskeyRegister" class="btn btn-tonal md-ripple" data-i18n="login.button.register">
+          Register with biometrics
+        </button>
+        <button id="btnPasskeyLogin" class="btn btn-filled md-ripple" data-i18n="login.button.login">
+          Login with biometrics
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Main -->
   <main class="content">
 
-    <!-- CREATE (Home) -->
+    <!-- CREATE -->
     <section id="create" class="screen active" role="tabpanel" aria-label="Create">
       <div class="screen-header">
         <h2 class="headline">Open New Account</h2>
@@ -190,9 +210,23 @@
         </div>
       </div>
     </section>
+
+    <!-- TRANSACTIONS -->
+    <section id="txns" class="screen" role="tabpanel" aria-label="Transactions">
+      <div class="screen-header">
+        <h2 class="headline" data-i18n="txns.title">Transactions</h2>
+        <p class="supporting" data-i18n="txns.hint">Your recent activity</p>
+      </div>
+      <div id="txList" class="card elevated txn-list loading">
+        <div class="skeleton line"></div><div class="skeleton line"></div><div class="skeleton line"></div>
+      </div>
+      <div class="actions right">
+        <button id="btnTxRefresh" class="btn btn-outline md-ripple" data-i18n="txns.refresh">Refresh</button>
+      </div>
+    </section>
   </main>
 
-  <!-- Extended FAB (quick create) -->
+  <!-- EFAB -->
   <button id="efab" class="efab md-ripple" aria-label="Create">
     <span class="material-symbols-rounded">add</span>
     <span class="efab__label">Create</span>
@@ -215,6 +249,10 @@
     <button class="nav-item md-ripple" data-tab="delete" aria-label="Delete">
       <span class="material-symbols-rounded">delete</span>
       <span class="nav-label">Delete</span>
+    </button>
+    <button class="nav-item md-ripple" data-tab="txns" aria-label="Transactions">
+      <span class="material-symbols-rounded">receipt_long</span>
+      <span class="nav-label">Txns</span>
     </button>
   </nav>
 
@@ -255,6 +293,15 @@
           <button class="btn chip md-ripple" data-theme="system">System</button>
           <button class="btn chip md-ripple" data-theme="light">Light</button>
           <button class="btn chip md-ripple" data-theme="dark">Dark</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title" data-i18n="settings.language">Language</div>
+        <div class="row">
+          <button class="btn chip md-ripple" data-lang="en">English</button>
+          <button class="btn chip md-ripple" data-lang="hi">हिंदी</button>
+          <button class="btn chip md-ripple" data-lang="te">తెలుగు</button>
         </div>
       </div>
 
