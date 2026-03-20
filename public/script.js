@@ -1,21 +1,22 @@
 // ========= Utilities =========
-const $ = (id) => document.getElementById(id);
+const $  = (id) => document.getElementById(id);
 const qa = (sel) => Array.from(document.querySelectorAll(sel));
 
+/** API path resolver (supports android/web via dynamic /config.js) */
 function API(path) {
-  // Respect Android base if mode=android; otherwise use proxy prefix
   const cfg = window.AppConfig || { mode: "web", WEB_PREFIX: "/api", ANDROID_BASE: "" };
   if (cfg.mode === "android" && cfg.ANDROID_BASE) return `${cfg.ANDROID_BASE}${path}`;
   const prefix = window.API_PREFIX || cfg.WEB_PREFIX || "/api";
   return `${prefix}${path}`;
 }
 
-const statusDot = $("statusDot");
-const statusText = $("statusText");
-const loader = $("loader");
+const statusDot   = $("statusDot");
+const statusText  = $("statusText");
+const loader      = $("loader");
 const respOverlay = $("respOverlay");
-const respBody = $("respBody");
+const respBody    = $("respBody");
 
+// Toasts
 function toast(msg, type="ok"){
   const wrap = $("toasts");
   const el = document.createElement("div");
@@ -27,9 +28,11 @@ function toast(msg, type="ok"){
     setTimeout(()=> wrap.removeChild(el), 250);
   }, 3000);
 }
+
 function showLoader(on){ loader.classList.toggle("hidden", !on); }
 function blurActive(){ if (document.activeElement?.blur) document.activeElement.blur(); }
 
+// Online status (network + last successful API)
 function setOnline(online){
   statusDot.classList.toggle("online", online);
   statusDot.classList.toggle("offline", !online);
@@ -44,16 +47,16 @@ setInterval(()=>{
   setOnline(online);
 }, 4000);
 
-// Button shimmer
-document.addEventListener("pointermove", e => {
-  document.querySelectorAll("button").forEach(btn=>{
-    const rect = btn.getBoundingClientRect();
-    btn.style.setProperty("--x", `${e.clientX - rect.left}px`);
-    btn.style.setProperty("--y", `${e.clientY - rect.top}px`);
-  });
+// Ripple origin follow pointer
+document.addEventListener("pointerdown", e => {
+  const el = e.target.closest(".ripple, .tab-btn, .bn-btn, .primary, .danger, .chip, .icon-btn");
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  el.style.setProperty("--x", `${e.clientX - rect.left}px`);
+  el.style.setProperty("--y", `${e.clientY - rect.top}px`);
 });
 
-// Convert YYYYMMDD to YYYY-MM-DD
+// Convert YYYYMMDD to YYYY-MM-DD (API expects date-only)
 function convertDOB(d){
   if(!d) return "";
   const s = String(d).trim();
@@ -77,17 +80,37 @@ window.addEventListener("resize", updateStickyHeight);
 window.addEventListener("scroll", updateStickyHeight);
 setInterval(updateStickyHeight, 500);
 
-// Tabs
-qa(".tab-btn").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    qa(".tab-btn").forEach(b=>b.classList.remove("active"));
-    qa(".panel").forEach(p=>p.classList.remove("active"));
-    btn.classList.add("active");
-    $(btn.dataset.tab).classList.add("active");
-    setTimeout(()=> $(btn.dataset.tab)?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-    setTimeout(updateStickyHeight, 150);
+// Tabs (top) & Bottom nav keep in sync
+function activateTab(tabId){
+  qa(".tab-btn").forEach(b=> b.classList.toggle("active", b.dataset.tab===tabId));
+  qa(".panel").forEach(p=> p.classList.toggle("active", p.id===tabId));
+  qa(".bn-btn").forEach(b=> b.classList.toggle("active", b.dataset.tab===tabId));
+  setTimeout(()=> $(tabId)?.scrollIntoView({ behavior: "smooth", block: "start" }), 40);
+  setTimeout(updateStickyHeight, 120);
+}
+qa(".tab-btn").forEach(btn => btn.addEventListener("click", () => activateTab(btn.dataset.tab)));
+qa(".bn-btn").forEach(btn => btn.addEventListener("click", () => activateTab(btn.dataset.tab)));
+
+// Parallax tilt for floating panels
+(function enableParallaxTilt(){
+  const maxTilt = 6; // degrees
+  const cards = qa(".float-card");
+  cards.forEach(c => c.classList.add("parallax-tilt"));
+  document.addEventListener("pointermove", (e) => {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const dx = (e.clientX - cx) / cx; // -1 .. 1
+    const dy = (e.clientY - cy) / cy; // -1 .. 1
+    const rx = (dy * maxTilt);
+    const ry = (-dx * maxTilt);
+    cards.forEach(c => {
+      c.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px)`;
+    });
   });
-});
+  document.addEventListener("pointerleave", () => {
+    cards.forEach(c => c.style.transform = "");
+  });
+})();
 
 // Confetti
 function launchConfetti(count=60){
@@ -119,6 +142,35 @@ function launchConfetti(count=60){
   document.head.appendChild(style);
 })();
 
+// Particles (soft)
+(function particles(){
+  const canvas = $("bgParticles");
+  const ctx = canvas.getContext("2d");
+  let w, h, particles = [];
+  function resize(){ w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+  function init(){
+    particles = Array.from({length: Math.min(80, Math.floor(w*h/30000))}).map(()=>({
+      x: Math.random()*w, y: Math.random()*h,
+      r: Math.random()*2+0.5, a: Math.random()*360, s: 0.2 + Math.random()*0.8
+    }));
+  }
+  function tick(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{
+      p.x += Math.cos(p.a)*p.s*0.2; p.y += Math.sin(p.a)*p.s*0.2; p.a+=0.01;
+      if(p.x<0) p.x=w; if(p.x>w) p.x=0; if(p.y<0) p.y=h; if(p.y>h) p.y=0;
+      const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
+      g.addColorStop(0, "rgba(255,97,210,.18)");
+      g.addColorStop(1, "rgba(0,198,255,.05)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  window.addEventListener("resize", ()=>{ resize(); init(); });
+  resize(); init(); tick();
+})();
+
 // Fetch wrapper
 async function doFetch(url, options){
   const res = await fetch(url, options);
@@ -146,10 +198,11 @@ $("btnCopyResp").addEventListener("click", async ()=>{
   }
 });
 
-// Settings (languages removed; keep theme/motion/contrast)
+// Settings
 const settings = $("settings");
-$("btnSettings").addEventListener("click", ()=> settings.classList.remove("hidden"));
-$("btnCloseSettings").addEventListener("click", ()=> settings.classList.add("hidden"));
+$("btnSettings").addEventListener("click", () => settings.classList.remove("hidden"));
+$("btnCloseSettings").addEventListener("click", () => settings.classList.add("hidden"));
+
 function applyTheme(theme){
   const html = document.documentElement;
   if (theme === "system") html.removeAttribute("data-theme");
@@ -169,6 +222,8 @@ document.querySelectorAll('[data-theme]').forEach(btn=>{
 });
 $("toggleMotion").addEventListener("change", (e)=> applyMotion(e.target.checked));
 $("toggleContrast").addEventListener("change", (e)=> applyContrast(e.target.checked));
+
+// Init settings
 (function initSettings(){
   const theme = localStorage.getItem("theme") || "system";
   const reduce = localStorage.getItem("reduceMotion") === "1";
@@ -178,48 +233,26 @@ $("toggleContrast").addEventListener("change", (e)=> applyContrast(e.target.chec
   $("toggleContrast").checked = hc;
 })();
 
-// Parallax tilt for floating panels
-(function enableParallaxTilt(){
-  const maxTilt = 6; // degrees
-  const cards = qa(".float-card");
-  cards.forEach(c => c.classList.add("parallax-tilt"));
-  document.addEventListener("pointermove", (e) => {
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-    const dx = (e.clientX - cx) / cx; // -1 .. 1
-    const dy = (e.clientY - cy) / cy; // -1 .. 1
-    const rx = (dy * maxTilt);
-    const ry = (-dx * maxTilt);
-    cards.forEach(c => {
-      c.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px)`;
-    });
-  });
-  document.addEventListener("pointerleave", () => {
-    cards.forEach(c => c.style.transform = "");
-  });
-})();
-
 // ---------- CREATE ----------
 $("btnCreate").addEventListener("click", async ()=>{
   blurActive();
-  const FullName = ($("#name").value || "").trim();
-  const dateOfBirth = convertDOB(($("#dob").value || "").trim());
+  const FullName     = ($("#name").value || "").trim();
+  const dateOfBirth  = convertDOB(($("#dob").value || "").trim());
   const mobileNumber = ($("#mobile").value || "").trim();
-  const email = ($("#email").value || "").trim();
-  const address = ($("#address").value || "").trim();
-  const adharNumber = ($("#aadhaar").value || "").trim();
-  const bankName = ($("#bank").value || "").trim();
+  const email        = ($("#email").value || "").trim();
+  const address      = ($("#address").value || "").trim();
+  const adharNumber  = ($("#aadhaar").value || "").trim();
+  const bankName     = ($("#bank").value || "").trim();
 
-  if(!FullName){ toast("FullName is required", "err"); $("#name").focus(); return; }
-  if(!dateOfBirth){ toast("dateOfBirth must be YYYYMMDD", "err"); $("#dob").focus(); return; }
-  if(!mobileNumber){ toast("mobileNumber is required", "err"); $("#mobile").focus(); return; }
-  if(!email){ toast("email is required", "err"); $("#email").focus(); return; }
-  if(!address){ toast("address is required", "err"); $("#address").focus(); return; }
-  if(!/^\d{12}$/.test(adharNumber)){ toast("Aadhaar (adharNumber) must be 12 digits", "err"); $("#aadhaar").focus(); return; }
+  if(!FullName){ toast("Full Name is required", "err"); $("#name").focus(); return; }
+  if(!dateOfBirth){ toast("DOB must be YYYYMMDD", "err"); $("#dob").focus(); return; }
+  if(!mobileNumber){ toast("Mobile number is required", "err"); $("#mobile").focus(); return; }
+  if(!email){ toast("Email is required", "err"); $("#email").focus(); return; }
+  if(!address){ toast("Address is required", "err"); $("#address").focus(); return; }
+  if(!/^\d{12}$/.test(adharNumber)){ toast("Aadhaar must be 12 digits", "err"); $("#aadhaar").focus(); return; }
   if(!["SBI","HDFC","APGIVB","AXIS","ICICI"].includes(bankName)){ toast("Select a valid bank", "err"); $("#bank").focus(); return; }
 
   const payload = { FullName, dateOfBirth, mobileNumber, email, address };
-
   const btn = $("btnCreate");
   btn.disabled = true; showLoader(true);
   try{
@@ -235,7 +268,7 @@ $("btnCreate").addEventListener("click", async ()=>{
       throw new Error((data && data.message) || `HTTP ${res.status}`);
     }
     showResponse(data);
-    toast("Account created successfully");
+    toast("Account created 🎉");
     launchConfetti(80);
     lastSuccess = Date.now();
   }catch(e){
@@ -262,17 +295,26 @@ $("btnSearch").addEventListener("click", async ()=>{
       showResponse(text || data);
       throw new Error((data && data.message) || `HTTP ${res.status}`);
     }
-    const fullName = data.FullName || data.fullName || "(No Name)";
+    // normalize
+    const d = (data && data.bankDetails && data.bankDetails.account_data) ? data.bankDetails.account_data : data;
+    const fullName = d.FullName || d.fullName || d.FULLNAME || "(No Name)";
+    const accountNumber = d.accountNumber || d.ACCOUNTNUMBER;
+    const mobile = d.mobileNumber || d.MOBILENUMBER;
+    const dob = d.dateOfBirth || d.DATEOFBIRTH;
+    const email = d.email || d.EMAIL;
+    const address = d.address || d.ADDRESS;
+
     const card = document.createElement("div"); card.className = "bankCard float-card";
     const h3 = document.createElement("h3"); h3.textContent = fullName;
-    const pAcc = document.createElement("p"); pAcc.textContent = `Account: ${data.accountNumber ?? "(unknown)"}`;
-    const pMob = document.createElement("p"); pMob.textContent = `Mobile: ${data.mobileNumber ?? "(unknown)"}`;
-    const pEmail = document.createElement("p"); pEmail.textContent = `Email: ${data.email ?? "(unknown)"}`;
-    const pDob = document.createElement("p"); pDob.textContent = `DOB: ${data.dateOfBirth ?? "(unknown)"}`;
-    const pAddr = document.createElement("p"); pAddr.textContent = `Address: ${data.address ?? "(unknown)"}`;
+    const pAcc = document.createElement("p"); pAcc.textContent = `Account: ${accountNumber ?? "(unknown)"}`;
+    const pMob = document.createElement("p"); pMob.textContent = `Mobile: ${mobile ?? "(unknown)"}`;
+    const pEmail = document.createElement("p"); pEmail.textContent = `Email: ${email ?? "(unknown)"}`;
+    const pDob = document.createElement("p"); pDob.textContent = `DOB: ${dob ?? "(unknown)"}`;
+    const pAddr = document.createElement("p"); pAddr.textContent = `Address: ${address ?? "(unknown)"}`;
     card.append(h3,pAcc,pMob,pEmail,pDob,pAddr);
     cardWrap.innerHTML = ""; cardWrap.appendChild(card);
-    showResponse(data);
+
+    showResponse(d);
     toast("Account fetched");
     lastSuccess = Date.now();
   }catch(e){
@@ -311,7 +353,7 @@ $("btnUpdate").addEventListener("click", async ()=>{
       throw new Error((data && data.message) || `HTTP ${res.status}`);
     }
     showResponse(data);
-    toast("Account updated");
+    toast("Account updated ✔");
     launchConfetti(50);
     lastSuccess = Date.now();
   }catch(e){
@@ -336,7 +378,7 @@ $("btnDelete").addEventListener("click", async ()=>{
       throw new Error((data && data.message) || `HTTP ${res.status}`);
     }
     showResponse(data);
-    toast("Account deleted");
+    toast("Account deleted 🗑️");
     launchConfetti(40);
     lastSuccess = Date.now();
   }catch(e){
