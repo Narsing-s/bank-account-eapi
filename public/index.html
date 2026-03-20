@@ -2,28 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Bank Account Dashboard</title>
+  <title>Bank Portal — Pink & Blue</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1024" />
+  <meta name="theme-color" content="#0e102d" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <!-- Animated backgrounds -->
+  <!-- Animated background layers -->
   <div class="bg-gradient"></div>
   <div class="bg-aurora"></div>
-  <div class="bg-particles" aria-hidden="true"></div>
+  <canvas id="bgParticles" class="bg-particles" aria-hidden="true"></canvas>
 
+  <!-- Top App Bar -->
   <header class="topbar" role="banner">
     <div class="brand">
       <div class="logo" aria-hidden="true">🏦</div>
       <div>
-        <div class="brand-title">Bank Account Dashboard</div>
-        <div class="brand-sub">User friendly bank portal</div>
+        <div class="brand-title">Bank Portal</div>
+        <div class="brand-sub">Mobile-first experience</div>
       </div>
     </div>
+
     <div class="actions">
-      <button id="btnSettings" class="icon-btn" aria-label="Settings">⚙️</button>
+      <button id="btnSettings" class="icon-btn ripple" aria-label="Settings">⚙️</button>
       <div class="status" id="status" aria-live="polite">
         <span class="dot offline" id="statusDot" aria-hidden="true"></span>
         <span id="statusText">Offline</span>
@@ -31,17 +33,20 @@
     </div>
   </header>
 
+  <!-- Tab Bar (Top) -->
   <nav class="tabs" role="tablist" aria-label="Operations">
-    <button class="tab-btn active" data-tab="create" role="tab" aria-selected="true">Create</button>
-    <button class="tab-btn" data-tab="search" role="tab">Search</button>
-    <button class="tab-btn" data-tab="update" role="tab">Update</button>
-    <button class="tab-btn" data-tab="delete" role="tab">Delete</button>
+    <button class="tab-btn active ripple" data-tab="create" role="tab" aria-selected="true">Create</button>
+    <button class="tab-btn ripple" data-tab="search" role="tab">Search</button>
+    <button class="tab-btn ripple" data-tab="update" role="tab">Update</button>
+    <button class="tab-btn ripple" data-tab="delete" role="tab">Delete</button>
   </nav>
 
+  <!-- Main content -->
   <main class="container floating-panels">
     <!-- CREATE -->
     <section id="create" class="panel active float-card" role="tabpanel" aria-labelledby="Create Account">
-      <h2>Create Account</h2>
+      <h2>Open New Account</h2>
+      <p class="hint">Fill the form and tap <b>Create Account</b>. You’ll receive a confirmation and an email.</p>
       <div class="grid">
         <label>Full Name
           <input id="name" placeholder="e.g., Jane Doe" maxlength="80" required />
@@ -71,26 +76,25 @@
           </select>
         </label>
       </div>
-
       <div class="action-bar" data-for="create">
         <div class="action-bar-inner">
-          <button id="btnCreate" class="primary">Create Account</button>
+          <button id="btnCreate" class="primary large ripple">Create Account</button>
         </div>
       </div>
     </section>
 
     <!-- SEARCH -->
     <section id="search" class="panel float-card" role="tabpanel">
-      <h2>Search Account</h2>
+      <h2>Find Account</h2>
+      <p class="hint">Enter an account number to fetch latest details.</p>
       <div class="grid">
         <label>Account Number
-          <input id="getAcc" placeholder="Enter account number" />
+          <input id="getAcc" placeholder="Enter account number" inputmode="numeric"/>
         </label>
       </div>
-
       <div class="action-bar" data-for="search">
         <div class="action-bar-inner">
-          <button id="btnSearch" class="primary">Search</button>
+          <button id="btnSearch" class="primary ripple">Search</button>
         </div>
       </div>
 
@@ -104,9 +108,10 @@
     <!-- UPDATE -->
     <section id="update" class="panel float-card" role="tabpanel">
       <h2>Update Account</h2>
+      <p class="hint">Provide account number and any fields you want to update.</p>
       <div class="grid">
         <label>Account Number
-          <input id="updateAcc" placeholder="Enter account number" />
+          <input id="updateAcc" placeholder="Enter account number" inputmode="numeric"/>
         </label>
         <label>Full Name
           <input id="updateName" placeholder="New full name" />
@@ -118,30 +123,45 @@
           <input id="updateMobile" placeholder="10-digit number" inputmode="tel" />
         </label>
       </div>
-
       <div class="action-bar" data-for="update">
         <div class="action-bar-inner">
-          <button id="btnUpdate" class="primary">Update</button>
+          <button id="btnUpdate" class="primary ripple">Update</button>
         </div>
       </div>
     </section>
 
     <!-- DELETE -->
     <section id="delete" class="panel float-card" role="tabpanel">
-      <h2>Delete Account</h2>
+      <h2>Deactivate Account</h2>
+      <p class="hint warn">This action is permanent.</p>
       <div class="grid">
         <label>Account Number
-          <input id="deleteAcc" placeholder="Enter account number" />
+          <input id="deleteAcc" placeholder="Enter account number" inputmode="numeric"/>
         </label>
       </div>
-
       <div class="action-bar" data-for="delete">
         <div class="action-bar-inner">
-          <button id="btnDelete" class="danger">Delete</button>
+          <button id="btnDelete" class="danger ripple">Delete</button>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- Bottom navigation (Android feel) -->
+  <nav class="bottom-nav" role="navigation" aria-label="Bottom">
+    <button class="bn-btn active ripple" data-tab="create" aria-label="Create">
+      <span class="bn-ico">➕</span><span class="bn-txt">Create</span>
+    </button>
+    <button class="bn-btn ripple" data-tab="search" aria-label="Search">
+      <span class="bn-ico">🔎</span><span class="bn-txt">Search</span>
+    </button>
+    <button class="bn-btn ripple" data-tab="update" aria-label="Update">
+      <span class="bn-ico">✏️</span><span class="bn-txt">Update</span>
+    </button>
+    <button class="bn-btn ripple" data-tab="delete" aria-label="Delete">
+      <span class="bn-ico">🗑️</span><span class="bn-txt">Delete</span>
+    </button>
+  </nav>
 
   <!-- Toasts -->
   <div id="toasts" class="toasts" aria-live="polite"></div>
@@ -149,6 +169,7 @@
   <!-- Loader -->
   <div id="loader" class="loader hidden" role="alert" aria-busy="true" aria-live="polite">
     <div class="spinner"></div>
+    <div class="spinner-text">Processing…</div>
   </div>
 
   <!-- Response Viewer -->
@@ -157,28 +178,28 @@
       <div class="overlay-head">
         <h3 id="respTitle">Response</h3>
         <div class="overlay-actions">
-          <button id="btnCopyResp" class="chip">Copy</button>
-          <button id="btnCloseResp" class="chip">Close</button>
+          <button id="btnCopyResp" class="chip ripple">Copy</button>
+          <button id="btnCloseResp" class="chip ripple">Close</button>
         </div>
       </div>
       <pre id="respBody" class="result"></pre>
     </div>
   </div>
 
-  <!-- Settings Drawer (languages removed) -->
+  <!-- Settings Drawer -->
   <aside id="settings" class="settings hidden" aria-labelledby="settingsTitle" role="dialog" aria-modal="true">
     <div class="settings-card float-card">
       <div class="settings-head">
         <h3 id="settingsTitle">Settings</h3>
-        <button id="btnCloseSettings" class="chip">Close</button>
+        <button id="btnCloseSettings" class="chip ripple">Close</button>
       </div>
 
       <div class="settings-group">
         <label>Theme</label>
         <div class="chips">
-          <button class="chip" data-theme="system">System</button>
-          <button class="chip" data-theme="light">Light</button>
-          <button class="chip" data-theme="dark">Dark</button>
+          <button class="chip ripple" data-theme="system">System</button>
+          <button class="chip ripple" data-theme="light">Light</button>
+          <button class="chip ripple" data-theme="dark">Dark</button>
         </div>
       </div>
 
@@ -206,6 +227,7 @@
   </script>
   <script src="/script.js"></script>
 
+  <!-- PWA -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
