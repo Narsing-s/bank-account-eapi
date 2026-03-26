@@ -1,6 +1,6 @@
 {
   "name": "bank-portal",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Modern Android-style Banking UI (MuleSoft CloudHub API) + Passkeys + i18n + PWA",
   "private": true,
   "main": "server.js",
@@ -8,9 +8,11 @@
     "start": "node server.js",
     "dev": "NODE_ENV=development node server.js"
   },
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
-    "@simplewebauthn/server": "^13.3.0",
-    "@simplewebauthn/types": "^13.3.0",
+    "@simplewebauthn/server": "^8.3.5",
     "axios": "^1.6.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
