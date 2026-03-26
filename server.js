@@ -1,4 +1,4 @@
-// server.js
+```js
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -12,93 +12,79 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// IMPORTANT: Include /api if Mule listener is /api/*
+/**
+ * ✅ ENV CONFIG (FIXED)
+ */
 const API_BASE =
   process.env.API_BASE ||
   "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io/api";
 
-// Optional (only if API Manager client ID enforcement is enabled)
+// 🔥 MUST match your Render domain
+const rpID = process.env.RP_ID || "your-render-app.onrender.com";
+const expectedOrigin =
+  process.env.ORIGIN || "https://your-render-app.onrender.com";
+
 const CLIENT_ID = process.env.CLIENT_ID || "";
 const CLIENT_SECRET = process.env.CLIENT_SECRET || "";
 
-// WebAuthn Relying Party
-const rpID = process.env.RP_ID || "localhost";                // your prod domain
-const rpName = process.env.RP_NAME || "Bank Portal";
-const expectedOrigin = process.env.ORIGIN || "https://bank-account-eapi-jik9pb.5sc6y6-4.usa-e2.cloudhub.io";
-
-const APP_MODE = (process.env.APP_MODE || "web").toLowerCase(); // "web"|"android"
-const WEB_PREFIX = process.env.WEB_PREFIX || "/api";
-const ANDROID_BASE = process.env.ANDROID_BASE || "";
-
-// Keep-alive improves upstream reliability
 const httpsAgent = new https.Agent({ keepAlive: true });
 
-// Core middleware
-app.use(cors());
+/**
+ * ✅ MIDDLEWARE
+ */
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
 app.use(express.json({ limit: "1mb" }));
 app.use(compression());
 app.use(morgan("tiny"));
 
 app.set("trust proxy", 1);
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "dev-secret",
+    secret: process.env.SESSION_SECRET || "super-secret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-      secure: false, // set true if behind HTTPS + reverse proxy; also set app.set('trust proxy', 1)
-      sameSite: "lax"
+      secure: true,        // 🔥 required for HTTPS (Render)
+      sameSite: "none"     // 🔥 required for cross-site cookies
     }
   })
 );
 
 /**
- * Serve a dynamic /config.js so window.AppConfig is ALWAYS defined
+ * ✅ HEALTH CHECK
  */
-app.get("/config.js", (req, res) => {
-  const q = req.query || {};
-  const qMode = (q.mode || "").toLowerCase();
-  const qsMode = qMode === "android" || qMode === "web" ? qMode : null;
-  const ua = (req.headers["user-agent"] || "").toLowerCase();
-  const uaLooksAndroid = ua.includes("android");
+app.get("/healthz", (_req, res) => res.json({ ok: true }));
 
-  let mode = qsMode || APP_MODE;
-  if (!qsMode && APP_MODE === "web" && uaLooksAndroid && ANDROID_BASE) mode = "android";
-
-  const webPrefix = q.webPrefix || WEB_PREFIX;
-  const androidBase = q.androidBase || ANDROID_BASE;
-
-  const js = `
-    window.AppConfig = window.AppConfig || {
-      mode: ${JSON.stringify(mode)},
-      WEB_PREFIX: ${JSON.stringify(webPrefix)},
-      ANDROID_BASE: ${JSON.stringify(androidBase)}
-    };
-  `;
-  res.type("application/javascript").send(js);
-});
-
-// Health check
-app.get("/healthz", (_req, res) => res.status(200).json({ ok: true }));
-
-// Static files
+/**
+ * ✅ STATIC FILES
+ */
 app.use(express.static(path.join(__dirname, "public")));
 
-// ----------------------------------------------------------
-// WebAuthn endpoints (Passkeys) using SimpleWebAuthn (server)
-// ----------------------------------------------------------
+/**
+ * ----------------------------------------------------------
+ * ✅ WebAuthn (Passkeys)
+ * ----------------------------------------------------------
+ */
 const {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
   verifyAuthenticationResponse
 } = require("@simplewebauthn/server");
+
 const { v4: uuidv4 } = require("uuid");
 
-// in-memory demo stores (replace with DB for prod)
-const users = new Map();      // username -> { id, credentials: [] }
-const challenges = new Map(); // username -> { regOptions?, authOptions? }
+const users = new Map();
+const challenges = new Map();
 
+/**
+ * REGISTER OPTIONS
+ */
 app.get("/webauthn/register/options", (req, res) => {
   const username = String(req.query.username || "").trim();
   if (!username) return res.status(400).json({ message: "username required" });
@@ -111,151 +97,138 @@ app.get("/webauthn/register/options", (req, res) => {
 
   const options = generateRegistrationOptions({
     rpID,
-    rpName,
+    rpName: "Bank Portal",
     userID: user.id,
     userName: username,
-    attestationType: "none",
-    authenticatorSelection: {
-      residentKey: "preferred",
-      userVerification: "required"
-    },
-    excludeCredentials: user.credentials.map((c) => ({
-      id: Buffer.from(c.credID, "base64url"),
-      type: "public-key"
-    }))
+    attestationType: "none"
   });
-  challenges.set(username, { regOptions: options });
+
+  challenges.set(username, options);
   res.json(options);
 });
 
+/**
+ * REGISTER VERIFY
+ */
 app.post("/webauthn/register/verify", async (req, res) => {
-  const { username, attResp } = req.body || {};
-  const ch = challenges.get(username)?.regOptions;
-  if (!ch) return res.status(400).json({ message: "no reg challenge" });
+  const { username, attResp } = req.body;
+  const expected = challenges.get(username);
 
   try {
-    const vr = await verifyRegistrationResponse({
+    const verification = await verifyRegistrationResponse({
       response: attResp,
-      expectedChallenge: ch.challenge,
+      expectedChallenge: expected.challenge,
       expectedOrigin,
       expectedRPID: rpID
     });
 
-    const { credentialID, credentialPublicKey, counter } = vr.registrationInfo;
     const user = users.get(username);
+
     user.credentials.push({
-      credID: Buffer.from(credentialID).toString("base64url"),
-      publicKey: Buffer.from(credentialPublicKey).toString("base64url"),
-      counter
+      credID: verification.registrationInfo.credentialID,
+      publicKey: verification.registrationInfo.credentialPublicKey,
+      counter: verification.registrationInfo.counter
     });
-    challenges.delete(username);
-    req.session.user = { id: user.id, username };
+
+    req.session.user = user;
     res.json({ ok: true });
   } catch (e) {
     res.status(400).json({ message: e.message });
   }
 });
 
+/**
+ * LOGIN OPTIONS
+ */
 app.get("/webauthn/login/options", (req, res) => {
-  const username = String(req.query.username || "").trim();
+  const username = req.query.username;
   const user = users.get(username);
-  if (!user || user.credentials.length === 0)
-    return res.status(404).json({ message: "not registered" });
+
+  if (!user) return res.status(404).json({ message: "not registered" });
 
   const options = generateAuthenticationOptions({
     rpID,
-    userVerification: "required",
-    allowCredentials: user.credentials.map((c) => ({
-      id: Buffer.from(c.credID, "base64url"),
+    allowCredentials: user.credentials.map(c => ({
+      id: c.credID,
       type: "public-key"
     }))
   });
-  challenges.set(username, { authOptions: options });
+
+  challenges.set(username, options);
   res.json(options);
 });
 
+/**
+ * LOGIN VERIFY
+ */
 app.post("/webauthn/login/verify", async (req, res) => {
-  const { username, assertion } = req.body || {};
-  const ch = challenges.get(username)?.authOptions;
+  const { username, assertion } = req.body;
+  const expected = challenges.get(username);
   const user = users.get(username);
-  if (!user || !ch) return res.status(400).json({ message: "no auth challenge" });
-
-  const dbCred = user.credentials.find((c) => c.credID === assertion.id);
-  if (!dbCred) return res.status(400).json({ message: "credential not found" });
 
   try {
-    const vr = await verifyAuthenticationResponse({
+    const credential = user.credentials[0];
+
+    const verification = await verifyAuthenticationResponse({
       response: assertion,
-      expectedChallenge: ch.challenge,
+      expectedChallenge: expected.challenge,
       expectedOrigin,
       expectedRPID: rpID,
-      authenticator: {
-        credentialID: Buffer.from(dbCred.credID, "base64url"),
-        credentialPublicKey: Buffer.from(dbCred.publicKey, "base64url"),
-        counter: dbCred.counter
-      }
+      authenticator: credential
     });
-    dbCred.counter = vr.authenticationInfo.newCounter;
-    challenges.delete(username);
-    req.session.user = { id: user.id, username };
+
+    credential.counter = verification.authenticationInfo.newCounter;
+    req.session.user = user;
+
     res.json({ ok: true });
   } catch (e) {
     res.status(401).json({ message: e.message });
   }
 });
 
-// -----------------------------------------------
-// Proxy: /api/* -> CloudHub (API_BASE)
-// with diagnostics + optional client_id/secret
-// -----------------------------------------------
+/**
+ * ----------------------------------------------------------
+ * ✅ PROXY TO MULESOFT
+ * ----------------------------------------------------------
+ */
 app.use("/api", async (req, res) => {
-  const upstreamUrl = API_BASE + req.url; // req.url includes /accounts...
-  const headers = {
-    "Content-Type": req.get("Content-Type") || "application/json",
-    Accept: req.get("Accept") || "application/json",
-    Authorization: req.get("Authorization"),
-    "x-forwarded-for": req.ip,
-    "x-forwarded-host": req.get("host")
-  };
-  if (CLIENT_ID) headers["client_id"] = CLIENT_ID;
-  if (CLIENT_SECRET) headers["client_secret"] = CLIENT_SECRET;
+  const url = API_BASE + req.url;
 
-  console.log(`[PROXY] ${req.method} ${upstreamUrl}`);
   try {
-    const ax = await axios({
+    const response = await axios({
       method: req.method,
-      url: upstreamUrl,
-      data: ["POST", "PUT", "PATCH"].includes(req.method) ? req.body : undefined,
-      headers,
+      url,
+      data: req.body,
+      headers: {
+        "Content-Type": "application/json",
+        ...(CLIENT_ID && { client_id: CLIENT_ID }),
+        ...(CLIENT_SECRET && { client_secret: CLIENT_SECRET })
+      },
       httpsAgent,
-      timeout: 30000,
       validateStatus: () => true
     });
-    console.log(`[PROXY] <- ${ax.status} ${upstreamUrl}`);
-    const ct = ax.headers["content-type"] || "application/json";
-    res.status(ax.status).set("Content-Type", ct);
-    if (ct.includes("application/json") && typeof ax.data === "object") {
-      res.json(ax.data);
-    } else {
-      res.send(ax.data);
-    }
+
+    res.status(response.status).json(response.data);
   } catch (e) {
-    console.error("[PROXY] error:", e.message);
-    res.status(502).json({ message: "Upstream unavailable", detail: e.message });
+    console.error("Proxy error:", e.message);
+    res.status(500).json({ message: "API error", detail: e.message });
   }
 });
 
-// SPA fallback
+/**
+ * ✅ SPA FALLBACK
+ */
 app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+/**
+ * ✅ START SERVER
+ */
 app.listen(PORT, () => {
-  console.log(`UI server running on http://localhost:${PORT}`);
-  console.log(`Proxy target (API_BASE): ${API_BASE}`);
-  console.log(`App mode (APP_MODE): ${APP_MODE}`);
-  if (APP_MODE === "android" || ANDROID_BASE) {
-    console.log(`Android base (ANDROID_BASE): ${ANDROID_BASE || "(not set)"}`);
-  }
-  console.log(`WebAuthn RP_ID: ${rpID}, ORIGIN: ${expectedOrigin}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`API_BASE: ${API_BASE}`);
+  console.log(`RP_ID: ${rpID}`);
+  console.log(`ORIGIN: ${expectedOrigin}`);
 });
+```
