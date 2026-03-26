@@ -9,7 +9,7 @@
     "dev": "NODE_ENV=development node server.js"
   },
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "dependencies": {
     "@simplewebauthn/server": "^8.3.5",
