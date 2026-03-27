@@ -1,9 +1,8 @@
 {
-  "name": "Bank Portal",
+  "name": "Bank App",
   "short_name": "Bank",
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#0b57d0",
   "background_color": "#ffffff",
-  "icons": []
+  "theme_color": "#0b57d0"
 }
