@@ -21,7 +21,10 @@ function toast(msg, type="ok"){
   el.className = `toast ${type}`;
   el.textContent = msg;
   wrap.appendChild(el);
-  setTimeout(() => { el.style.opacity = "0"; setTimeout(()=> wrap.removeChild(el), 220); }, 2800);
+  setTimeout(() => {
+    el.style.opacity = "0";
+    setTimeout(() => wrap.removeChild(el), 220);
+  }, 2800);
 }
 
 function showLoader(on){ loader.classList.toggle("hidden", !on); }
@@ -33,13 +36,14 @@ const loginSheet = $("loginSheet");
 const MAX_ATTEMPTS = 3;
 const LOCK_TIME_MS = 5 * 60 * 1000;
 
-// Init defaults
+// ---- Init defaults safely ----
 (function initAuth(){
-  if (!localStorage.getItem("auth.user")) {
+  if (localStorage.getItem("auth.user") === null) {
     localStorage.setItem("auth.user", "admin");
     localStorage.setItem("auth.pass", "admin123");
     localStorage.setItem("auth.pin",  "1234");
     localStorage.setItem("auth.attempts", "0");
+    localStorage.setItem("unlocked", "0");
   }
 })();
 
@@ -70,9 +74,10 @@ function remainingLockTime(){
   return Math.ceil((t - Date.now()) / 1000);
 }
 
+// ✅ Always enforce login on load
 requireUnlock();
 
-// Login
+// ---- Login ----
 $("btnLogin")?.addEventListener("click", () => {
   if (isLocked()) {
     return toast(`Account locked. Try again in ${remainingLockTime()}s`, "err");
@@ -86,18 +91,19 @@ $("btnLogin")?.addEventListener("click", () => {
     return toast("All fields are required", "err");
   }
 
-  if (
-    user === localStorage.getItem("auth.user") &&
-    pass === localStorage.getItem("auth.pass") &&
-    pin  === localStorage.getItem("auth.pin")
-  ) {
+  const sUser = localStorage.getItem("auth.user");
+  const sPass = localStorage.getItem("auth.pass");
+  const sPin  = localStorage.getItem("auth.pin");
+
+  if (user === sUser && pass === sPass && pin === sPin) {
     localStorage.setItem("auth.attempts", "0");
     localStorage.removeItem("auth.lockUntil");
     setUnlocked(true);
     toast("Login successful");
   } else {
-    let attempts = Number(localStorage.getItem("auth.attempts")) + 1;
-    localStorage.setItem("auth.attempts", attempts);
+    let attempts = Number(localStorage.getItem("auth.attempts") || "0") + 1;
+    localStorage.setItem("auth.attempts", String(attempts));
+
     if (attempts >= MAX_ATTEMPTS) {
       lockAccount();
       toast("Too many attempts. Locked for 5 minutes", "err");
@@ -107,13 +113,13 @@ $("btnLogin")?.addEventListener("click", () => {
   }
 });
 
-// Logout
+// ---- Logout ----
 $("btnLogout")?.addEventListener("click", () => {
   setUnlocked(false);
   toast("Logged out");
 });
 
-// Change Password & PIN
+// ---- Change Password & PIN ----
 $("btnChangeCreds")?.addEventListener("click", () => {
   const oldPass = ($("#oldPassword").value || "").trim();
   const oldPin  = ($("#oldPin").value || "").trim();
@@ -141,4 +147,4 @@ $("btnChangeCreds")?.addEventListener("click", () => {
 });
 
 // ========= CRUD Buttons =========
-// (UNCHANGED – your existing CRUD, search, update, delete, transactions code continues here)
+// ✅ Everything below this remains EXACTLY as in your current file
