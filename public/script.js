@@ -15,20 +15,25 @@ const loader      = $("loader");
 const respOverlay = $("respOverlay");
 const respBody    = $("respBody");
 
-function toast(msg, type="ok"){
+function toast(msg, type = "ok") {
   const wrap = $("toasts");
   const el = document.createElement("div");
   el.className = `toast ${type}`;
   el.textContent = msg;
   wrap.appendChild(el);
+
   setTimeout(() => {
     el.style.opacity = "0";
     setTimeout(() => wrap.removeChild(el), 220);
   }, 2800);
 }
 
-function showLoader(on){ loader.classList.toggle("hidden", !on); }
-function blurActive(){ if (document.activeElement?.blur) document.activeElement.blur(); }
+function showLoader(on) {
+  loader.classList.toggle("hidden", !on);
+}
+function blurActive() {
+  if (document.activeElement?.blur) document.activeElement.blur();
+}
 
 // ========= Simple Login + Attempt Limit + Change Credentials =========
 const loginSheet = $("loginSheet");
@@ -37,44 +42,44 @@ const MAX_ATTEMPTS = 3;
 const LOCK_TIME_MS = 5 * 60 * 1000;
 
 // ---- Init defaults safely ----
-(function initAuth(){
+(function initAuth() {
   if (localStorage.getItem("auth.user") === null) {
     localStorage.setItem("auth.user", "admin");
     localStorage.setItem("auth.pass", "admin123");
-    localStorage.setItem("auth.pin",  "1234");
+    localStorage.setItem("auth.pin", "1234");
     localStorage.setItem("auth.attempts", "0");
     localStorage.setItem("unlocked", "0");
   }
 })();
 
-function unlocked(){
+function unlocked() {
   return localStorage.getItem("unlocked") === "1";
 }
 
-function requireUnlock(){
+function requireUnlock() {
   if (!unlocked()) loginSheet.classList.remove("hidden");
 }
 
-function setUnlocked(on){
+function setUnlocked(on) {
   localStorage.setItem("unlocked", on ? "1" : "0");
   loginSheet.classList.toggle("hidden", on);
 }
 
-function lockAccount(){
+function lockAccount() {
   localStorage.setItem("auth.lockUntil", Date.now() + LOCK_TIME_MS);
 }
 
-function isLocked(){
+function isLocked() {
   const t = Number(localStorage.getItem("auth.lockUntil") || 0);
   return Date.now() < t;
 }
 
-function remainingLockTime(){
+function remainingLockTime() {
   const t = Number(localStorage.getItem("auth.lockUntil") || 0);
   return Math.ceil((t - Date.now()) / 1000);
 }
 
-// ✅ Always enforce login on load
+// Always enforce login
 requireUnlock();
 
 // ---- Login ----
@@ -147,4 +152,4 @@ $("btnChangeCreds")?.addEventListener("click", () => {
 });
 
 // ========= CRUD Buttons =========
-// ✅ Everything below this remains EXACTLY as in your current file
+// ✅ Everything else in your original file remains unchanged
