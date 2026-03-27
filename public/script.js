@@ -1,22 +1,22 @@
-/******************** Helpers ********************/
+/***************** Helpers *****************/
 const $ = (id) => document.getElementById(id);
 
-/******************** Toast ********************/
+/***************** Toast *****************/
 function toast(msg) {
-  const t = document.createElement("div");
-  t.textContent = msg;
-  t.style.background = "#333";
-  t.style.color = "#fff";
-  t.style.padding = "8px";
-  t.style.margin = "5px";
-  $("toasts").appendChild(t);
-  setTimeout(() => t.remove(), 2500);
+  const d = document.createElement("div");
+  d.textContent = msg;
+  d.style.background = "#333";
+  d.style.color = "#fff";
+  d.style.padding = "6px";
+  d.style.margin = "4px";
+  $("toasts").appendChild(d);
+  setTimeout(() => d.remove(), 2500);
 }
 
-/******************** API ********************/
+/***************** API *****************/
 const API = (path) => `${window.AppConfig.API_BASE}${path}`;
 
-/******************** USERS ********************/
+/***************** USERS *****************/
 const USERS_KEY = "bank.users";
 const SESSION_KEY = "bank.user";
 
@@ -24,25 +24,7 @@ const getUsers = () => JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
 const setUsers = (u) => localStorage.setItem(USERS_KEY, JSON.stringify(u));
 const currentUser = () => localStorage.getItem(SESSION_KEY);
 
-/******************** VOICE ********************/
-let voiceEnabled = false;
-function speak(msg) {
-  if (!voiceEnabled) return;
-  speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
-}
-
-/******************** SETTINGS ********************/
-$("btnSettings").onclick = () => $("settingsSheet").classList.remove("hidden");
-$("closeSettings").onclick = () => $("settingsSheet").classList.add("hidden");
-
-$("voiceToggle").onchange = (e) => {
-  voiceEnabled = e.target.checked;
-  speak("Voice enabled");
-};
-
-$("languageSelect").onchange = () => speak("Language changed");
-
-/******************** LOGIN ********************/
+/***************** LOGIN *****************/
 if (!currentUser()) $("loginSheet").classList.remove("hidden");
 
 $("btnLogin").onclick = () => {
@@ -50,7 +32,10 @@ $("btnLogin").onclick = () => {
   const p = $("loginPassword").value.trim();
   const pin = $("loginPin").value.trim() || null;
 
-  if (!u || !p) return alert("Username & password required");
+  if (!u || !p) {
+    alert("Username & password required");
+    return;
+  }
 
   const users = getUsers();
   if (!users[u]) users[u] = { password: p, pin };
@@ -59,13 +44,13 @@ $("btnLogin").onclick = () => {
   if (users[u].password === p && (!users[u].pin || users[u].pin === pin)) {
     localStorage.setItem(SESSION_KEY, u);
     $("loginSheet").classList.add("hidden");
-    speak("Login successful");
+    toast("Login successful");
   } else {
     alert("Invalid login");
   }
 };
 
-/******************** CREATE ********************/
+/***************** CREATE *****************/
 $("btnCreate").onclick = async () => {
   const payload = {
     FullName: $("name").value,
@@ -86,26 +71,48 @@ $("btnCreate").onclick = async () => {
   toast("Account created");
 };
 
-/******************** GET (✅ FIXED) ********************/
+/***************** ✅ GET (FIXED) *****************/
 $("btnGet").onclick = async () => {
   const acc = $("getAccountNumber").value.trim();
-  if (!acc) return alert("Account number required");
+  if (!acc) {
+    alert("Account number required");
+    return;
+  }
 
   try {
-    const res = await fetch(API(`/accounts/${acc}`));
-    if (!res.ok) throw new Error("Not found");
+    const res = await fetch(API(`/accounts/${acc}`), {
+      headers: { "Accept": "application/json" }
+    });
 
-    const data = await res.json();
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
 
-    // ✅ SHOW DATA IN UI
-    $("getResult").textContent = JSON.stringify(data, null, 2);
-    console.log("GET response:", data);
+    const raw = await res.text();
+
+    let data;
+    try {
+      data = JSON.parse(raw);      // ✅ JSON response
+    } catch {
+      data = raw;                 // ✅ Non‑JSON fallback
+    }
+
+    $("getResult").textContent =
+      typeof data === "string"
+        ? data
+        : JSON.stringify(data, null, 2);
+
+    console.log("GET success:", data);
+
   } catch (e) {
-    $("getResult").textContent = "Failed to fetch account";
+    console.error("GET failed:", e);
+    $("getResult").textContent =
+      "Failed to fetch account\n\n" + e.message;
   }
 };
 
-/******************** UPDATE ********************/
+/***************** UPDATE *****************/
 $("btnUpdate").onclick = async () => {
   const acc = $("updateAccountNumber").value;
   const payload = {
@@ -120,13 +127,12 @@ $("btnUpdate").onclick = async () => {
     body: JSON.stringify(payload)
   });
 
-  speak("Account updated");
+  toast("Account updated");
 };
 
-/******************** DELETE ********************/
+/***************** DELETE *****************/
 $("btnDelete").onclick = async () => {
   const acc = $("deleteAccountNumber").value;
   await fetch(API(`/accounts/${acc}`), { method: "DELETE" });
-  speak("Account deleted");
+  toast("Account deleted");
 };
-``
