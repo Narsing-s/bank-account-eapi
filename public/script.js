@@ -1,118 +1,103 @@
-// ========= Helpers (DECLARE ONCE) =========
 const $ = (id) => document.getElementById(id);
 
-// ========= Toast =========
-function toast(msg, type = "ok") {
-  const wrap = $("toasts");
-  if (!wrap) {
-    alert(msg);
-    return;
+// ---------------- USERS ----------------
+const USERS_KEY = "bank.users";
+const SESSION_KEY = "bank.user";
+
+const getUsers = () => JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
+const setUsers = (u) => localStorage.setItem(USERS_KEY, JSON.stringify(u));
+const currentUser = () => localStorage.getItem(SESSION_KEY);
+
+// ---------------- VOICE ----------------
+let voiceEnabled = false;
+function speak(msg) {
+  if (!voiceEnabled) return;
+  speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+}
+
+// ---------------- SETTINGS ----------------
+$("btnSettings").onclick = () => $("settingsSheet").classList.remove("hidden");
+function closeSettings() { $("settingsSheet").classList.add("hidden"); }
+
+$("voiceToggle").onchange = (e) => {
+  voiceEnabled = e.target.checked;
+  speak("Voice enabled");
+};
+
+$("languageSelect").onchange = (e) => {
+  localStorage.setItem("lang", e.target.value);
+  speak("Language changed");
+};
+
+// ---------------- LOGIN ----------------
+if (!currentUser()) $("loginSheet").classList.remove("hidden");
+
+$("btnLogin").onclick = () => {
+  const u = $("loginUser").value.trim();
+  const p = $("loginPassword").value.trim();
+  const pin = $("loginPin").value.trim() || null;
+
+  const users = getUsers();
+  if (!users[u]) users[u] = { password: p, pin };
+
+  if (users[u].password === p && (!users[u].pin || users[u].pin === pin)) {
+    setUsers(users);
+    localStorage.setItem(SESSION_KEY, u);
+    $("loginSheet").classList.add("hidden");
+    speak("Login successful");
+  } else {
+    alert("Invalid login");
   }
-  const el = document.createElement("div");
-  el.className = `toast ${type}`;
-  el.textContent = msg;
-  wrap.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = "0";
-    setTimeout(() => wrap.removeChild(el), 200);
-  }, 2500);
-}
+};
 
-// ========= API =========
-function API(path) {
-  return window.AppConfig.API_BASE + path;
-}
+// ---------------- API HELPER ----------------
+const API = (path) => `${window.AppConfig.API_BASE}${path}`;
 
-// ========= USER STORAGE =========
-const USERS_KEY   = "bank.users";
-const SESSION_KEY = "bank.currentUser";
-
-function getUsers() {
-  return JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
-}
-function setUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-function currentUser() {
-  return localStorage.getItem(SESSION_KEY);
-}
-
-// ========= LOGIN =========
-document.addEventListener("DOMContentLoaded", () => {
-
-  const loginSheet = $("loginSheet");
-
-  // Always enforce login
-  if (!currentUser()) loginSheet.classList.remove("hidden");
-  else loginSheet.classList.add("hidden");
-
-  $("btnLogin").addEventListener("click", () => {
-    const user = $("loginUser").value.trim();
-    const pass = $("loginPassword").value.trim();
-    const pin  = $("loginPin").value.trim() || null;
-
-    if (!user || !pass) {
-      toast("Username and password required", "err");
-      return;
-    }
-
-    const users = getUsers();
-
-    // Auto-register new users
-    if (!users[user]) {
-      users[user] = { password: pass, pin };
-      setUsers(users);
-    }
-
-    // Authenticate
-    if (
-      users[user].password === pass &&
-      (users[user].pin ? users[user].pin === pin : true)
-    ) {
-      localStorage.setItem(SESSION_KEY, user);
-      loginSheet.classList.add("hidden");   // ✅ CRITICAL FIX
-      toast(`Welcome ${user}`);
-    } else {
-      toast("Invalid credentials", "err");
-    }
-  });
-});
-
-// ========= CREATE ACCOUNT =========
-$("btnCreate").addEventListener("click", async () => {
-
-  if (!currentUser()) {
-    $("loginSheet").classList.remove("hidden");
-    return;
-  }
-
-  console.log("Create clicked by:", currentUser());
-  console.log("Calling Mule:", API("/accounts"));
-
+// ---------------- CREATE ----------------
+$("btnCreate").onclick = async () => {
   const payload = {
     FullName: $("name").value,
     dateOfBirth: $("dob").value,
     mobileNumber: $("mobile").value,
     email: $("email").value,
-    address: $("address").value,
-    createdBy: currentUser()
+    address: $("address").value
   };
 
-  try {
-    const res = await fetch(API("/accounts"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+  const qs = `?adharNumber=${$("adharnumber").value}&bankName=${$("bankname").value}`;
+  await fetch(API(`/accounts${qs}`), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  speak("Account created");
+};
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+// ---------------- GET ----------------
+$("btnGet").onclick = async () => {
+  const acc = $("getAccountNumber").value;
+  await fetch(API(`/accounts/${acc}`));
+};
 
-    const data = await res.json();
-    console.log("Mule response:", data);
-    toast("Account created successfully");
+// ---------------- UPDATE ----------------
+$("btnUpdate").onclick = async () => {
+  const acc = $("updateAccountNumber").value;
+  const payload = {
+    FullName: $("updateName").value,
+    mobileNumber: $("updateMobile").value,
+    address: $("updateAddress").value
+  };
 
-  } catch (e) {
-    console.error(e);
-    toast("Request failed to reach Mule API", "err");
-  }
-});
+  await fetch(API(`/accounts/${acc}`), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  speak("Account updated");
+};
+
+// ---------------- DELETE ----------------
+$("btnDelete").onclick = async () => {
+  const acc = $("deleteAccountNumber").value;
+  await fetch(API(`/accounts/${acc}`), { method: "DELETE" });
+  speak("Account deleted");
+};
