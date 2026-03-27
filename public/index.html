@@ -1,59 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Bank — Modern Android</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded">
-  <link rel="stylesheet" href="/style.css">
+  <meta charset="utf-8" />
+  <title>Bank — Android Material</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 
 <body>
 
-<!-- App Bar -->
 <header class="app-bar">
-  <div class="app-bar__row">
-    <div class="app-bar__title">
-      <span class="material-symbols-rounded">account_balance</span>
-      <div>
-        <div class="title">Bank</div>
-        <div class="subtitle">Android Material</div>
-      </div>
-    </div>
-  </div>
+  <h2>Bank – Android Material</h2>
+  <button id="btnSettings">⚙️</button>
 </header>
 
-<!-- LOGIN OVERLAY -->
+<!-- LOGIN -->
 <div id="loginSheet" class="overlay">
-  <div class="sheet elevated">
+  <div class="sheet">
     <h3>Login / Register</h3>
-    <input id="loginUser" class="text-field" placeholder="Username">
-    <input id="loginPassword" class="text-field" type="password" placeholder="Password">
-    <input id="loginPin" class="text-field" type="password" placeholder="PIN (optional)">
-    <button id="btnLogin" class="btn btn-filled">Login</button>
+    <input id="loginUser" placeholder="Username" />
+    <input id="loginPassword" type="password" placeholder="Password" />
+    <input id="loginPin" type="password" placeholder="PIN (optional)" />
+    <button id="btnLogin">Login</button>
   </div>
 </div>
 
-<!-- MAIN UI -->
+<!-- SETTINGS -->
+<div id="settingsSheet" class="overlay hidden">
+  <div class="sheet">
+    <h3>Settings</h3>
+
+    <label>
+      Language:
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="te">Telugu</option>
+      </select>
+    </label>
+
+    <label>
+      <input type="checkbox" id="voiceToggle" />
+      Enable Voice Feedback
+    </label>
+
+    <button onclick="closeSettings()">Close</button>
+  </div>
+</div>
+
+<!-- MAIN -->
 <main class="content">
 
-  <section id="create" class="screen active">
-    <h2>Create Account</h2>
+<section>
+  <h3>Create Account</h3>
+  <input id="name" placeholder="Full Name" />
+  <input id="dob" placeholder="YYYYMMDD" />
+  <input id="mobile" placeholder="Mobile" />
+  <input id="email" placeholder="Email" />
+  <input id="address" placeholder="Address" />
+  <input id="adharnumber" placeholder="Aadhaar" />
+  <input id="bankname" placeholder="Bank Name" />
+  <button id="btnCreate">Create</button>
+</section>
 
-    <input id="name" class="text-field" placeholder="Full Name">
-    <input id="dob" class="text-field" placeholder="YYYYMMDD">
-    <input id="mobile" class="text-field" placeholder="Mobile">
-    <input id="email" class="text-field" placeholder="Email">
-    <input id="address" class="text-field" placeholder="Address">
+<section>
+  <h3>Get Account</h3>
+  <input id="getAccountNumber" placeholder="Account Number" />
+  <button id="btnGet">Fetch</button>
+</section>
 
-    <button id="btnCreate" class="btn btn-filled">Create</button>
-  </section>
+<section>
+  <h3>Update Account</h3>
+  <input id="updateAccountNumber" placeholder="Account Number" />
+  <input id="updateName" placeholder="Full Name" />
+  <input id="updateMobile" placeholder="Mobile" />
+  <input id="updateAddress" placeholder="Address" />
+  <button id="btnUpdate">Update</button>
+</section>
+
+<section>
+  <h3>Delete Account</h3>
+  <input id="deleteAccountNumber" placeholder="Account Number" />
+  <button id="btnDelete">Delete</button>
+</section>
 
 </main>
 
-<div id="toasts" class="toasts"></div>
+<div id="toasts"></div>
 
 <script src="/config.js"></script>
 <script src="/script.js"></script>
