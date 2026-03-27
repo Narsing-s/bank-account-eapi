@@ -44,11 +44,10 @@
       Enable Voice Feedback
     </label>
 
-    <button onclick="closeSettings()">Close</button>
+    <button id="closeSettings">Close</button>
   </div>
 </div>
 
-<!-- MAIN -->
 <main class="content">
 
 <section>
@@ -67,6 +66,11 @@
   <h3>Get Account</h3>
   <input id="getAccountNumber" placeholder="Account Number" />
   <button id="btnGet">Fetch</button>
+</section>
+
+<section>
+  <h3>Account Details</h3>
+  <pre id="getResult"></pre>
 </section>
 
 <section>
@@ -90,6 +94,6 @@
 
 <script src="/config.js"></script>
 <script src="/script.js"></script>
-
 </body>
 </html>
+``
