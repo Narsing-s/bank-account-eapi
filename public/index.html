@@ -3,143 +3,54 @@
 <head>
   <meta charset="utf-8" />
   <title>Bank — Modern Android</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b57d0" />
+
   <link rel="manifest" href="/manifest.json" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:FILL@0..1&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded&display=swap">
   <link rel="stylesheet" href="/style.css" />
 </head>
 
 <body>
 
-  <!-- Top App Bar -->
-  <header class="app-bar">
-    <div class="app-bar__row">
-      <div class="app-bar__title">
-        <span class="material-symbols-rounded">account_balance</span>
-        <div class="app-bar__text">
-          <div class="title">Bank</div>
-          <div class="subtitle">Android Material</div>
-        </div>
-      </div>
-      <div class="app-bar__actions">
-        <div class="net">
-          <span id="statusDot" class="dot offline"></span>
-          <span id="statusText">Offline</span>
-        </div>
-        <button id="btnSettings" class="icon-btn md-ripple">
-          <span class="material-symbols-rounded">settings</span>
-        </button>
+<header class="app-bar">
+  <div class="app-bar__row">
+    <div class="app-bar__title">
+      <span class="material-symbols-rounded">account_balance</span>
+      <div>
+        <div class="title">Bank</div>
+        <div class="subtitle">Android Material</div>
       </div>
     </div>
-  </header>
-
-  <!-- LOGIN SHEET -->
-  <div id="loginSheet" class="overlay hidden">
-    <div class="sheet elevated">
-      <div class="sheet-head">
-        <h3>Secure Login</h3>
-      </div>
-
-      <div class="section">
-        <div class="field">
-          <label class="label">Username</label>
-          <input id="loginUser" class="text-field" placeholder="admin" />
-        </div>
-
-        <div class="field">
-          <label class="label">Password</label>
-          <input id="loginPassword" type="password" class="text-field" placeholder="Password" />
-        </div>
-
-        <div class="field">
-          <label class="label">PIN</label>
-          <input id="loginPin" type="password" class="text-field" placeholder="4-digit PIN" />
-        </div>
-      </div>
-
-      <div class="actions">
-        <button id="btnLogin" class="btn btn-filled md-ripple">
-          Login
-        </button>
-        <button id="btnLogout" class="btn btn-tonal md-ripple">
-          Logout
-        </button>
-      </div>
+    <div class="app-bar__actions">
+      <span id="statusText">Offline</span>
     </div>
   </div>
+</header>
 
-  <!-- MAIN CONTENT (UNCHANGED BELOW) -->
-  <main class="content">
-    <!-- All your existing Create / Search / Update / Delete / Txns sections -->
-    <!-- ✅ NO CHANGES DONE HERE -->
-  </main>
+<!-- LOGIN -->
+<div id="loginSheet" class="overlay hidden">
+  <div class="sheet elevated">
 
-  <!-- SETTINGS DRAWER -->
-  <aside id="settings" class="drawer hidden">
-    <div class="sheet elevated">
-      <div class="sheet-head">
-        <h3>Settings</h3>
-        <button id="btnCloseSettings" class="btn btn-text md-ripple">Close</button>
-      </div>
+    <h3>Secure Login</h3>
 
-      <!-- Change Password / PIN -->
-      <div class="section">
-        <div class="section-title">Change Password & PIN</div>
+    <input id="loginUser" placeholder="Username" />
+    <input id="loginPassword" type="password" placeholder="Password" />
+    <input id="loginPin" type="password" placeholder="PIN" />
 
-        <div class="field">
-          <input id="oldPassword" type="password" class="text-field" placeholder="Old Password">
-        </div>
+    <button id="btnLogin">Login</button>
+    <button id="btnLogout">Logout</button>
 
-        <div class="field">
-          <input id="oldPin" type="password" class="text-field" placeholder="Old PIN">
-        </div>
-
-        <div class="field">
-          <input id="newPassword" type="password" class="text-field" placeholder="New Password">
-        </div>
-
-        <div class="field">
-          <input id="newPin" type="password" class="text-field" placeholder="New PIN">
-        </div>
-
-        <button id="btnChangeCreds" class="btn btn-filled md-ripple">
-          Update Credentials
-        </button>
-      </div>
-
-      <!-- Appearance & Language (unchanged) -->
-    </div>
-  </aside>
-
-  <!-- Toasts -->
-  <div id="toasts" class="toasts"></div>
-
-  <!-- Loader -->
-  <div id="loader" class="loader hidden">
-    <div class="spinner"></div>
-    <div class="loader-text">Working…</div>
   </div>
+</div>
 
-  <!-- Response Viewer (unchanged) -->
-  <div id="respOverlay" class="overlay hidden">
-    <div class="sheet elevated">
-      <div class="sheet-head">
-        <h3>Response</h3>
-        <div class="sheet-actions">
-          <button id="btnCopyResp" class="btn btn-outline md-ripple">Copy</button>
-          <button id="btnCloseResp" class="btn btn-text md-ripple">Close</button>
-        </div>
-      </div>
-      <pre id="respBody"></pre>
-    </div>
-  </div>
+<!-- MAIN CONTENT (unchanged UI can go here) -->
+<main class="content"></main>
 
-  <script src="/config.js"></script>
-  <script>
-    window.API_PREFIX = "/api";
-  </script>
-  <script src="/script.js"></script>
+<div id="toasts"></div>
+<div id="loader" class="hidden">Loading…</div>
 
+<script src="/config.js"></script>
+<script src="/script.js"></script>
 </body>
 </html>
