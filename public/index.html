@@ -5,12 +5,14 @@
   <title>Bank — Modern Android</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded">
   <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
 
+<!-- App Bar -->
 <header class="app-bar">
   <div class="app-bar__row">
     <div class="app-bar__title">
@@ -23,41 +25,38 @@
   </div>
 </header>
 
-<!-- LOGIN -->
+<!-- LOGIN OVERLAY -->
 <div id="loginSheet" class="overlay">
   <div class="sheet elevated">
-
-    <h3>Login</h3>
-
-    <input id="loginUser" placeholder="Username">
-    <input id="loginPassword" type="password" placeholder="Password">
-    <input id="loginPin" type="password" placeholder="PIN (optional)">
-
-    <button id="btnLogin">Login / Register</button>
-
+    <h3>Login / Register</h3>
+    <input id="loginUser" class="text-field" placeholder="Username">
+    <input id="loginPassword" class="text-field" type="password" placeholder="Password">
+    <input id="loginPin" class="text-field" type="password" placeholder="PIN (optional)">
+    <button id="btnLogin" class="btn btn-filled">Login</button>
   </div>
 </div>
 
-<!-- APP -->
+<!-- MAIN UI -->
 <main class="content">
 
-  <section class="screen active" id="create">
+  <section id="create" class="screen active">
     <h2>Create Account</h2>
 
-    <input id="name" placeholder="Full Name">
-    <input id="dob" placeholder="YYYYMMDD">
-    <input id="mobile" placeholder="Mobile">
-    <input id="email" placeholder="Email">
-    <input id="address" placeholder="Address">
+    <input id="name" class="text-field" placeholder="Full Name">
+    <input id="dob" class="text-field" placeholder="YYYYMMDD">
+    <input id="mobile" class="text-field" placeholder="Mobile">
+    <input id="email" class="text-field" placeholder="Email">
+    <input id="address" class="text-field" placeholder="Address">
 
-    <button id="btnCreate">Create</button>
+    <button id="btnCreate" class="btn btn-filled">Create</button>
   </section>
 
 </main>
 
-<div id="toasts"></div>
+<div id="toasts" class="toasts"></div>
 
 <script src="/config.js"></script>
 <script src="/script.js"></script>
+
 </body>
 </html>
