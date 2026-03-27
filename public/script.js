@@ -13,7 +13,97 @@ function toast(msg, type="ok"){
     el.style.opacity = "0";
     setTimeout(() => wrap.removeChild(el), 220);
   }, 2800);
+}// ========= Helpers =========
+const $ = (id) => document.getElementById(id);
+
+function toast(msg) {
+  alert(msg);
 }
+
+// ========= API =========
+function API(path) {
+  return `${window.AppConfig.API_BASE}${path}`;
+}
+
+// ========= USERS =========
+const USERS_KEY = "bank.users";
+const SESSION_KEY = "bank.session";
+
+function getUsers() {
+  return JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
+}
+function setUsers(u) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(u));
+}
+function currentUser() {
+  return localStorage.getItem(SESSION_KEY);
+}
+
+// ========= LOGIN =========
+$("btnLogin").addEventListener("click", () => {
+  const user = $("loginUser").value.trim();
+  const pass = $("loginPassword").value.trim();
+  const pin  = $("loginPin").value.trim() || null;
+
+  if (!user || !pass) {
+    toast("Username and password required");
+    return;
+  }
+
+  const users = getUsers();
+
+  if (!users[user]) {
+    // auto register
+    users[user] = { password: pass, pin };
+    setUsers(users);
+  }
+
+  if (
+    users[user].password === pass &&
+    (users[user].pin ? users[user].pin === pin : true)
+  ) {
+    localStorage.setItem(SESSION_KEY, user);
+    $("loginSheet").style.display = "none";
+    toast("Logged in");
+  } else {
+    toast("Invalid credentials");
+  }
+});
+
+// ========= CREATE ACCOUNT =========
+$("btnCreate").addEventListener("click", async () => {
+
+  if (!currentUser()) {
+    $("loginSheet").style.display = "block";
+    return;
+  }
+
+  const payload = {
+    FullName: $("name").value,
+    dateOfBirth: $("dob").value,
+    mobileNumber: $("mobile").value,
+    email: $("email").value,
+    address: $("address").value,
+    createdBy: currentUser()
+  };
+
+  try {
+    const res = await fetch(API("/accounts"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    toast("Account created successfully");
+    console.log("Mule response:", data);
+
+  } catch (e) {
+    console.error(e);
+    toast("Failed to reach Mule API");
+  }
+});
 
 // ========= LOGIN (REPLACEMENT FOR BIOMETRICS) =========
 const loginSheet = $("loginSheet");
