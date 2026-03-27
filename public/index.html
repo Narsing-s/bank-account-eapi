@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Bank — Android Material</title>
+  <title>Bank – Android Material</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/style.css" />
 </head>
@@ -22,29 +22,6 @@
     <input id="loginPassword" type="password" placeholder="Password" />
     <input id="loginPin" type="password" placeholder="PIN (optional)" />
     <button id="btnLogin">Login</button>
-  </div>
-</div>
-
-<!-- SETTINGS -->
-<div id="settingsSheet" class="overlay hidden">
-  <div class="sheet">
-    <h3>Settings</h3>
-
-    <label>
-      Language:
-      <select id="languageSelect">
-        <option value="en">English</option>
-        <option value="hi">Hindi</option>
-        <option value="te">Telugu</option>
-      </select>
-    </label>
-
-    <label>
-      <input type="checkbox" id="voiceToggle" />
-      Enable Voice Feedback
-    </label>
-
-    <button id="closeSettings">Close</button>
   </div>
 </div>
 
@@ -69,8 +46,10 @@
 </section>
 
 <section>
-  <h3>Account Details</h3>
-  <pre id="getResult"></pre>
+  <h3>✅ API Response</h3>
+  <pre id="getResult"
+       style="background:#111;color:#0f0;padding:12px;white-space:pre-wrap;">
+  </pre>
 </section>
 
 <section>
@@ -96,4 +75,3 @@
 <script src="/script.js"></script>
 </body>
 </html>
-``
