@@ -1,178 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Bank — Modern Android</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b57d0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:FILL@0..1&display=swap">
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded">
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
 
-  <!-- Top App Bar -->
-  <header class="app-bar" role="banner">
-    <div class="app-bar__row">
-      <div class="app-bar__title">
-        <span class="material-symbols-rounded">account_balance</span>
-        <div class="app-bar__text">
-          <div class="title">Bank</div>
-          <div class="subtitle">Android Material</div>
-        </div>
-      </div>
-
-      <div class="app-bar__actions">
-        <div class="net">
-          <span id="statusDot" class="dot offline"></span>
-          <span id="statusText">Offline</span>
-        </div>
-
-        <button id="btnSettings" class="icon-btn md-ripple">
-          <span class="material-symbols-rounded">settings</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- LOGIN SHEET -->
-  <div id="loginSheet" class="overlay hidden" role="dialog" aria-modal="true">
-    <div class="sheet elevated">
-      <div class="sheet-head">
-        <h3>Secure Login</h3>
-      </div>
-
-      <div class="section">
-
-        <div class="field">
-          <label class="label">Username</label>
-          <input id="loginUser" class="text-field" placeholder="admin" />
-        </div>
-
-        <div class="field">
-          <label class="label">Password</label>
-          <input id="loginPassword" type="password" class="text-field" />
-        </div>
-
-        <div class="field">
-          <label class="label">PIN</label>
-          <input id="loginPin" type="password" class="text-field" />
-        </div>
-
-      </div>
-
-      <div class="actions">
-        <button id="btnLogin" class="btn btn-filled md-ripple">
-          Login
-        </button>
+<header class="app-bar">
+  <div class="app-bar__row">
+    <div class="app-bar__title">
+      <span class="material-symbols-rounded">account_balance</span>
+      <div>
+        <div class="title">Bank</div>
+        <div class="subtitle">Android Material</div>
       </div>
     </div>
   </div>
+</header>
 
-  <!-- MAIN CONTENT (UNCHANGED) -->
-  <main class="content">
+<!-- LOGIN -->
+<div id="loginSheet" class="overlay">
+  <div class="sheet elevated">
 
-    <!-- CREATE -->
-    <section id="create" class="screen active">
-      <div class="screen-header">
-        <h2 class="headline">Open New Account</h2>
-        <p class="supporting">
-          Fill the details and tap Create. You’ll get a response and email confirmation.
-        </p>
-      </div>
+    <h3>Login</h3>
 
-      <div class="card elevated">
-        <div class="form-grid">
+    <input id="loginUser" placeholder="Username">
+    <input id="loginPassword" type="password" placeholder="Password">
+    <input id="loginPin" type="password" placeholder="PIN (optional)">
 
-          <div class="field">
-            <label class="label" for="name">Full Name</label>
-            <input id="name" class="text-field" />
-          </div>
+    <button id="btnLogin">Login / Register</button>
 
-          <div class="field">
-            <label class="label" for="dob">Date of Birth (YYYYMMDD)</label>
-            <input id="dob" class="text-field" />
-          </div>
-
-          <div class="field">
-            <label class="label" for="mobile">Mobile</label>
-            <input id="mobile" class="text-field" />
-          </div>
-
-          <div class="field">
-            <label class="label" for="email">Email</label>
-            <input id="email" class="text-field" />
-          </div>
-
-          <div class="field span-2">
-            <label class="label" for="address">Address</label>
-            <input id="address" class="text-field" />
-          </div>
-
-          <div class="field">
-            <label class="label" for="aadhaar">Aadhaar</label>
-            <input id="aadhaar" class="text-field" />
-          </div>
-
-          <div class="field">
-            <label class="label" for="bank">Bank</label>
-            <select id="bank" class="select-field">
-              <option>SBI</option>
-              <option>HDFC</option>
-              <option>APGIVB</option>
-              <option>AXIS</option>
-              <option>ICICI</option>
-            </select>
-          </div>
-
-        </div>
-
-        <div class="actions right">
-          <button id="btnCreate" class="btn btn-filled md-ripple">
-            <span class="material-symbols-rounded">add_circle</span>
-            Create Account
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- SEARCH, UPDATE, DELETE, TRANSACTIONS -->
-    <!-- ✅ Everything else remains exactly as your original file -->
-
-  </main>
-
-  <!-- EFAB -->
-  <button id="efab" class="efab md-ripple">
-    <span class="material-symbols-rounded">add</span>
-    <span class="efab__label">Create</span>
-  </button>
-
-  <!-- Bottom Navigation -->
-  <nav class="bottom-bar">
-    <button class="nav-item active" data-tab="create">Create</button>
-    <button class="nav-item" data-tab="search">Search</button>
-    <button class="nav-item" data-tab="update">Update</button>
-    <button class="nav-item" data-tab="delete">Delete</button>
-    <button class="nav-item" data-tab="txns">Txns</button>
-  </nav>
-
-  <!-- Toasts -->
-  <div id="toasts" class="toasts"></div>
-
-  <!-- Loader -->
-  <div id="loader" class="loader hidden">
-    <div class="spinner"></div>
-    <div class="loader-text">Working…</div>
   </div>
+</div>
 
-  <!-- Config & App scripts -->
-  <script src="/config.js"></script>
-  <script>
-    window.API_PREFIX = "/api";
-  </script>
-  <script src="/script.js"></script>
+<!-- APP -->
+<main class="content">
 
+  <section class="screen active" id="create">
+    <h2>Create Account</h2>
+
+    <input id="name" placeholder="Full Name">
+    <input id="dob" placeholder="YYYYMMDD">
+    <input id="mobile" placeholder="Mobile">
+    <input id="email" placeholder="Email">
+    <input id="address" placeholder="Address">
+
+    <button id="btnCreate">Create</button>
+  </section>
+
+</main>
+
+<div id="toasts"></div>
+
+<script src="/config.js"></script>
+<script src="/script.js"></script>
 </body>
 </html>
