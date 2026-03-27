@@ -1,6 +1,22 @@
+/******************** Helpers ********************/
 const $ = (id) => document.getElementById(id);
 
-// ---------------- USERS ----------------
+/******************** Toast ********************/
+function toast(msg) {
+  const t = document.createElement("div");
+  t.textContent = msg;
+  t.style.background = "#333";
+  t.style.color = "#fff";
+  t.style.padding = "8px";
+  t.style.margin = "5px";
+  $("toasts").appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+/******************** API ********************/
+const API = (path) => `${window.AppConfig.API_BASE}${path}`;
+
+/******************** USERS ********************/
 const USERS_KEY = "bank.users";
 const SESSION_KEY = "bank.user";
 
@@ -8,28 +24,25 @@ const getUsers = () => JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
 const setUsers = (u) => localStorage.setItem(USERS_KEY, JSON.stringify(u));
 const currentUser = () => localStorage.getItem(SESSION_KEY);
 
-// ---------------- VOICE ----------------
+/******************** VOICE ********************/
 let voiceEnabled = false;
 function speak(msg) {
   if (!voiceEnabled) return;
   speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
 }
 
-// ---------------- SETTINGS ----------------
+/******************** SETTINGS ********************/
 $("btnSettings").onclick = () => $("settingsSheet").classList.remove("hidden");
-function closeSettings() { $("settingsSheet").classList.add("hidden"); }
+$("closeSettings").onclick = () => $("settingsSheet").classList.add("hidden");
 
 $("voiceToggle").onchange = (e) => {
   voiceEnabled = e.target.checked;
   speak("Voice enabled");
 };
 
-$("languageSelect").onchange = (e) => {
-  localStorage.setItem("lang", e.target.value);
-  speak("Language changed");
-};
+$("languageSelect").onchange = () => speak("Language changed");
 
-// ---------------- LOGIN ----------------
+/******************** LOGIN ********************/
 if (!currentUser()) $("loginSheet").classList.remove("hidden");
 
 $("btnLogin").onclick = () => {
@@ -37,11 +50,13 @@ $("btnLogin").onclick = () => {
   const p = $("loginPassword").value.trim();
   const pin = $("loginPin").value.trim() || null;
 
+  if (!u || !p) return alert("Username & password required");
+
   const users = getUsers();
   if (!users[u]) users[u] = { password: p, pin };
+  setUsers(users);
 
   if (users[u].password === p && (!users[u].pin || users[u].pin === pin)) {
-    setUsers(users);
     localStorage.setItem(SESSION_KEY, u);
     $("loginSheet").classList.add("hidden");
     speak("Login successful");
@@ -50,10 +65,7 @@ $("btnLogin").onclick = () => {
   }
 };
 
-// ---------------- API HELPER ----------------
-const API = (path) => `${window.AppConfig.API_BASE}${path}`;
-
-// ---------------- CREATE ----------------
+/******************** CREATE ********************/
 $("btnCreate").onclick = async () => {
   const payload = {
     FullName: $("name").value,
@@ -64,21 +76,36 @@ $("btnCreate").onclick = async () => {
   };
 
   const qs = `?adharNumber=${$("adharnumber").value}&bankName=${$("bankname").value}`;
+
   await fetch(API(`/accounts${qs}`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
-  speak("Account created");
+
+  toast("Account created");
 };
 
-// ---------------- GET ----------------
+/******************** GET (✅ FIXED) ********************/
 $("btnGet").onclick = async () => {
-  const acc = $("getAccountNumber").value;
-  await fetch(API(`/accounts/${acc}`));
+  const acc = $("getAccountNumber").value.trim();
+  if (!acc) return alert("Account number required");
+
+  try {
+    const res = await fetch(API(`/accounts/${acc}`));
+    if (!res.ok) throw new Error("Not found");
+
+    const data = await res.json();
+
+    // ✅ SHOW DATA IN UI
+    $("getResult").textContent = JSON.stringify(data, null, 2);
+    console.log("GET response:", data);
+  } catch (e) {
+    $("getResult").textContent = "Failed to fetch account";
+  }
 };
 
-// ---------------- UPDATE ----------------
+/******************** UPDATE ********************/
 $("btnUpdate").onclick = async () => {
   const acc = $("updateAccountNumber").value;
   const payload = {
@@ -92,12 +119,14 @@ $("btnUpdate").onclick = async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
+
   speak("Account updated");
 };
 
-// ---------------- DELETE ----------------
+/******************** DELETE ********************/
 $("btnDelete").onclick = async () => {
   const acc = $("deleteAccountNumber").value;
   await fetch(API(`/accounts/${acc}`), { method: "DELETE" });
   speak("Account deleted");
 };
+``
