@@ -2,92 +2,214 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Bank — Android Material</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bank — Modern Android</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b57d0" />
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:FILL@0..1&display=swap">
   <link rel="stylesheet" href="/style.css" />
 </head>
 
 <body>
 
-<header class="app-bar">
-  <h2>Bank – Android Material</h2>
-  <button id="btnSettings">⚙️</button>
+<!-- ==================== APP BAR ==================== -->
+<header class="app-bar" role="banner">
+  <div class="app-bar__row">
+    <div class="app-bar__title">
+      <span class="material-symbols-rounded" aria-hidden="true">account_balance</span>
+      <div class="app-bar__text">
+        <div class="title" data-i18n="app.title">Bank</div>
+        <div class="subtitle" data-i18n="app.subtitle">Android Material</div>
+      </div>
+    </div>
+
+    <div class="app-bar__actions">
+      <div class="net">
+        <span id="statusDot" class="dot offline"></span>
+        <span id="statusText">Offline</span>
+      </div>
+      <button id="btnSettings" class="icon-btn md-ripple" aria-label="Settings">
+        <span class="material-symbols-rounded">settings</span>
+      </button>
+    </div>
+  </div>
 </header>
 
-<!-- LOGIN -->
-<div id="loginSheet" class="overlay">
-  <div class="sheet">
-    <h3>Login / Register</h3>
-    <input id="loginUser" placeholder="Username" />
-    <input id="loginPassword" type="password" placeholder="Password" />
-    <input id="loginPin" type="password" placeholder="PIN (optional)" />
-    <button id="btnLogin">Login</button>
+<!-- ==================== LOGIN SHEET ==================== -->
+<div id="loginSheet" class="overlay" role="dialog" aria-modal="true">
+  <div class="sheet elevated">
+
+    <div class="sheet-head">
+      <h3 id="loginTitle">Login / Register</h3>
+    </div>
+
+    <div class="section">
+      <div class="field">
+        <label class="label" for="loginUser">Username</label>
+        <input id="loginUser" class="text-field" placeholder="Username" />
+      </div>
+
+      <div class="field">
+        <label class="label" for="loginPassword">Password</label>
+        <input id="loginPassword" class="text-field" type="password" placeholder="Password" />
+      </div>
+
+      <div class="field">
+        <label class="label" for="loginPin">PIN (optional)</label>
+        <input id="loginPin" class="text-field" type="password" placeholder="PIN (optional)" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btnLogin" class="btn btn-filled md-ripple">
+        Login
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- SETTINGS -->
-<div id="settingsSheet" class="overlay hidden">
-  <div class="sheet">
-    <h3>Settings</h3>
-
-    <label>
-      Language:
-      <select id="languageSelect">
-        <option value="en">English</option>
-        <option value="hi">Hindi</option>
-        <option value="te">Telugu</option>
-      </select>
-    </label>
-
-    <label>
-      <input type="checkbox" id="voiceToggle" />
-      Enable Voice Feedback
-    </label>
-
-    <button onclick="closeSettings()">Close</button>
-  </div>
-</div>
-
-<!-- MAIN -->
+<!-- ==================== MAIN CONTENT ==================== -->
 <main class="content">
 
-<section>
-  <h3>Create Account</h3>
-  <input id="name" placeholder="Full Name" />
-  <input id="dob" placeholder="YYYYMMDD" />
-  <input id="mobile" placeholder="Mobile" />
-  <input id="email" placeholder="Email" />
-  <input id="address" placeholder="Address" />
-  <input id="adharnumber" placeholder="Aadhaar" />
-  <input id="bankname" placeholder="Bank Name" />
-  <button id="btnCreate">Create</button>
-</section>
+  <!-- ===== CREATE ===== -->
+  <section id="create" class="screen active">
+    <div class="screen-header">
+      <h2 class="headline">Open New Account</h2>
+      <p class="supporting">Fill the details and tap Create.</p>
+    </div>
 
-<section>
-  <h3>Get Account</h3>
-  <input id="getAccountNumber" placeholder="Account Number" />
-  <button id="btnGet">Fetch</button>
-</section>
+    <div class="card elevated">
+      <div class="form-grid">
 
-<section>
-  <h3>Update Account</h3>
-  <input id="updateAccountNumber" placeholder="Account Number" />
-  <input id="updateName" placeholder="Full Name" />
-  <input id="updateMobile" placeholder="Mobile" />
-  <input id="updateAddress" placeholder="Address" />
-  <button id="btnUpdate">Update</button>
-</section>
+        <div class="field">
+          <label class="label" for="name">Full Name</label>
+          <input id="name" class="text-field" />
+        </div>
 
-<section>
-  <h3>Delete Account</h3>
-  <input id="deleteAccountNumber" placeholder="Account Number" />
-  <button id="btnDelete">Delete</button>
-</section>
+        <div class="field">
+          <label class="label" for="dob">Date of Birth (YYYYMMDD)</label>
+          <input id="dob" class="text-field" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="mobile">Mobile</label>
+          <input id="mobile" class="text-field" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="email">Email</label>
+          <input id="email" class="text-field" />
+        </div>
+
+        <div class="field span-2">
+          <label class="label" for="address">Address</label>
+          <input id="address" class="text-field" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="aadhaar">Aadhaar</label>
+          <input id="aadhaar" class="text-field" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="bank">Bank</label>
+          <select id="bank" class="select-field">
+            <option>SBI</option>
+            <option>HDFC</option>
+            <option>APGIVB</option>
+            <option>AXIS</option>
+            <option>ICICI</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="actions right">
+        <button id="btnCreate" class="btn btn-filled md-ripple">
+          <span class="material-symbols-rounded">add_circle</span>
+          Create Account
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SEARCH ===== -->
+  <section id="search" class="screen">
+    <div class="screen-header">
+      <h2 class="headline">Find Account</h2>
+    </div>
+
+    <div class="card elevated">
+      <input id="getAcc" class="text-field" placeholder="Account Number" />
+      <button id="btnSearch" class="btn btn-filled">Search</button>
+      <div id="bankCard" class="result-card"></div>
+    </div>
+  </section>
+
+  <!-- ===== UPDATE ===== -->
+  <section id="update" class="screen">
+    <div class="screen-header">
+      <h2 class="headline">Update Account</h2>
+    </div>
+
+    <div class="card elevated">
+      <input id="updateAcc" class="text-field" placeholder="Account Number" />
+      <input id="updateName" class="text-field" placeholder="Full Name" />
+      <input id="updateMobile" class="text-field" placeholder="Mobile" />
+      <button id="btnUpdate" class="btn btn-filled">Update</button>
+    </div>
+  </section>
+
+  <!-- ===== DELETE ===== -->
+  <section id="delete" class="screen">
+    <div class="screen-header">
+      <h2 class="headline">Deactivate Account</h2>
+    </div>
+
+    <div class="card elevated">
+      <input id="deleteAcc" class="text-field" placeholder="Account Number" />
+      <button id="btnDelete" class="btn btn-tonal danger">Delete</button>
+    </div>
+  </section>
 
 </main>
 
-<div id="toasts"></div>
+<!-- ==================== SETTINGS ==================== -->
+<aside id="settings" class="drawer hidden" role="dialog" aria-modal="true">
+  <div class="sheet elevated">
+    <div class="sheet-head">
+      <h3>Settings</h3>
+      <button id="btnCloseSettings" class="btn btn-text">Close</button>
+    </div>
 
+    <div class="section">
+      <div class="section-title">Language</div>
+      <div class="row">
+        <button class="btn chip" data-lang="en">English</button>
+        <button class="btn chip" data-lang="hi">हिंदी</button>
+        <button class="btn chip" data-lang="te">తెలుగు</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <label class="toggle">
+        <input type="checkbox" id="voiceToggle" />
+        <span>Enable Voice Feedback</span>
+      </label>
+    </div>
+  </div>
+</aside>
+
+<!-- ==================== UTIL ==================== -->
+<div id="toasts" class="toasts"></div>
+
+<div id="loader" class="loader hidden">
+  <div class="spinner"></div>
+  <div class="loader-text">Working…</div>
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
 <script src="/config.js"></script>
 <script src="/script.js"></script>
 
