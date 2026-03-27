@@ -1,103 +1,216 @@
+/*************************
+ * Shortcuts & Config
+ *************************/
 const $ = (id) => document.getElementById(id);
+const qa = (sel) => Array.from(document.querySelectorAll(sel));
 
-// ---------------- USERS ----------------
-const USERS_KEY = "bank.users";
-const SESSION_KEY = "bank.user";
-
-const getUsers = () => JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
-const setUsers = (u) => localStorage.setItem(USERS_KEY, JSON.stringify(u));
-const currentUser = () => localStorage.getItem(SESSION_KEY);
-
-// ---------------- VOICE ----------------
-let voiceEnabled = false;
-function speak(msg) {
-  if (!voiceEnabled) return;
-  speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+/*************************
+ * API (CloudHub only)
+ *************************/
+function API(path) {
+  return `${window.AppConfig.API_BASE}${path}`;
 }
 
-// ---------------- SETTINGS ----------------
-$("btnSettings").onclick = () => $("settingsSheet").classList.remove("hidden");
-function closeSettings() { $("settingsSheet").classList.add("hidden"); }
+/*************************
+ * UI Helpers
+ *************************/
+function toast(msg, type = "ok") {
+  const wrap = $("toasts");
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = "0";
+    setTimeout(() => wrap.removeChild(el), 220);
+  }, 2800);
+}
 
-$("voiceToggle").onchange = (e) => {
-  voiceEnabled = e.target.checked;
-  speak("Voice enabled");
-};
+function showLoader(on) {
+  $("loader").classList.toggle("hidden", !on);
+}
+function blurActive() {
+  document.activeElement?.blur();
+}
 
-$("languageSelect").onchange = (e) => {
-  localStorage.setItem("lang", e.target.value);
-  speak("Language changed");
-};
+/*************************
+ * Login / Multi‑User Auth
+ *************************/
+const USERS_KEY = "bank.users";
+const SESSION_KEY = "bank.sessionUser";
 
-// ---------------- LOGIN ----------------
-if (!currentUser()) $("loginSheet").classList.remove("hidden");
+function getUsers() {
+  return JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
+}
+function setUsers(u) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(u));
+}
+function currentUser() {
+  return localStorage.getItem(SESSION_KEY);
+}
 
-$("btnLogin").onclick = () => {
-  const u = $("loginUser").value.trim();
-  const p = $("loginPassword").value.trim();
-  const pin = $("loginPin").value.trim() || null;
+document.addEventListener("DOMContentLoaded", () => {
+  const loginSheet = $("loginSheet");
 
-  const users = getUsers();
-  if (!users[u]) users[u] = { password: p, pin };
-
-  if (users[u].password === p && (!users[u].pin || users[u].pin === pin)) {
-    setUsers(users);
-    localStorage.setItem(SESSION_KEY, u);
-    $("loginSheet").classList.add("hidden");
-    speak("Login successful");
-  } else {
-    alert("Invalid login");
+  if (!currentUser()) {
+    loginSheet.classList.remove("hidden");
   }
-};
 
-// ---------------- API HELPER ----------------
-const API = (path) => `${window.AppConfig.API_BASE}${path}`;
+  $("btnLogin").addEventListener("click", () => {
+    const user = $("loginUser").value.trim();
+    const pass = $("loginPassword").value.trim();
+    const pin  = $("loginPin").value.trim() || null;
 
-// ---------------- CREATE ----------------
-$("btnCreate").onclick = async () => {
+    if (!user || !pass) {
+      toast("Username and password required", "err");
+      return;
+    }
+
+    const users = getUsers();
+
+    // Auto‑register
+    if (!users[user]) {
+      users[user] = { password: pass, pin };
+      setUsers(users);
+    }
+
+    if (
+      users[user].password === pass &&
+      (!users[user].pin || users[user].pin === pin)
+    ) {
+      localStorage.setItem(SESSION_KEY, user);
+      loginSheet.classList.add("hidden");
+      toast(`Welcome ${user}`);
+    } else {
+      toast("Invalid credentials", "err");
+    }
+  });
+});
+
+/*************************
+ * Helpers
+ *************************/
+function convertDOB(d) {
+  if (!d) return "";
+  if (!/^\d{8}$/.test(d)) return "";
+  return `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6)}`;
+}
+
+async function doFetch(url, options) {
+  const res = await fetch(url, options);
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch { data = text; }
+  return { res, data };
+}
+
+/*************************
+ * CREATE ACCOUNT
+ *************************/
+$("btnCreate").addEventListener("click", async () => {
+  if (!currentUser()) {
+    $("loginSheet").classList.remove("hidden");
+    return;
+  }
+
+  const FullName     = $("name").value.trim();
+  const dateOfBirth  = convertDOB($("dob").value.trim());
+  const mobileNumber = $("mobile").value.trim();
+  const email        = $("email").value.trim();
+  const address      = $("address").value.trim();
+  const adharNumber  = $("aadhaar").value.trim();
+  const bankName     = $("bank").value;
+
+  if (!FullName || !dateOfBirth || !mobileNumber || !email || !address) {
+    toast("All fields are required", "err");
+    return;
+  }
+
+  const payload = { FullName, dateOfBirth, mobileNumber, email, address };
+  const qs = new URLSearchParams({ adharNumber, bankName }).toString();
+
+  try {
+    showLoader(true);
+    const { res, data } = await doFetch(
+      API(`/accounts?${qs}`),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (!res.ok) throw new Error(data.message || "Create failed");
+
+    toast("Account created successfully");
+    console.log("Create Response:", data);
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    showLoader(false);
+  }
+});
+
+/*************************
+ * SEARCH ACCOUNT
+ *************************/
+$("btnSearch").addEventListener("click", async () => {
+  const acc = $("getAcc").value.trim();
+  if (!acc) return toast("Account number required", "err");
+
+  try {
+    showLoader(true);
+    const { data } = await doFetch(API(`/accounts/${acc}`), { method: "GET" });
+    $("bankCard").textContent = JSON.stringify(data, null, 2);
+  } catch (e) {
+    toast("Search failed", "err");
+  } finally {
+    showLoader(false);
+  }
+});
+
+/*************************
+ * UPDATE ACCOUNT
+ *************************/
+$("btnUpdate").addEventListener("click", async () => {
+  const acc = $("updateAcc").value.trim();
+  if (!acc) return toast("Account number required", "err");
+
   const payload = {
-    FullName: $("name").value,
-    dateOfBirth: $("dob").value,
-    mobileNumber: $("mobile").value,
-    email: $("email").value,
-    address: $("address").value
+    FullName: $("updateName").value.trim(),
+    mobileNumber: $("updateMobile").value.trim()
   };
 
-  const qs = `?adharNumber=${$("adharnumber").value}&bankName=${$("bankname").value}`;
-  await fetch(API(`/accounts${qs}`), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-  speak("Account created");
-};
+  try {
+    showLoader(true);
+    await doFetch(API(`/accounts/${acc}`), {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    toast("Account updated");
+  } catch {
+    toast("Update failed", "err");
+  } finally {
+    showLoader(false);
+  }
+});
 
-// ---------------- GET ----------------
-$("btnGet").onclick = async () => {
-  const acc = $("getAccountNumber").value;
-  await fetch(API(`/accounts/${acc}`));
-};
+/*************************
+ * DELETE ACCOUNT
+ *************************/
+$("btnDelete").addEventListener("click", async () => {
+  const acc = $("deleteAcc").value.trim();
+  if (!acc) return toast("Account number required", "err");
 
-// ---------------- UPDATE ----------------
-$("btnUpdate").onclick = async () => {
-  const acc = $("updateAccountNumber").value;
-  const payload = {
-    FullName: $("updateName").value,
-    mobileNumber: $("updateMobile").value,
-    address: $("updateAddress").value
-  };
-
-  await fetch(API(`/accounts/${acc}`), {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-  speak("Account updated");
-};
-
-// ---------------- DELETE ----------------
-$("btnDelete").onclick = async () => {
-  const acc = $("deleteAccountNumber").value;
-  await fetch(API(`/accounts/${acc}`), { method: "DELETE" });
-  speak("Account deleted");
-};
+  try {
+    showLoader(true);
+    await doFetch(API(`/accounts/${acc}`), { method: "DELETE" });
+    toast("Account deleted");
+  } catch {
+    toast("Delete failed", "err");
+  } finally {
+    showLoader(false);
+  }
+});
