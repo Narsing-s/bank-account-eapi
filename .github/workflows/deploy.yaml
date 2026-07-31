@@ -2,6 +2,11 @@ name: Deploy Mule API
 
 on:
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Set to "yes" to run CloudHub deploy'
+        required: true
+        default: 'no'
 
   push:
     branches:
@@ -9,12 +14,9 @@ on:
       - stg
 
 jobs:
-  deploy:
-
+  build:
     runs-on: ubuntu-latest
-
     steps:
-
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
@@ -22,12 +24,34 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Deploy
+      - name: Build package (no CloudHub deploy)
         run: |
-          mvn clean deploy \
-          -DmuleDeploy \
-          -DskipTests \
-          -Dapp.name=bank-account-eapi \
-          -Denvironment=Sandbox \
-          -Danypoint.username=${{ secrets.ANYPOINT_USERNAME }} \
-          -Danypoint.password=${{ secrets.ANYPOINT_PASSWORD }}
+          mvn -B clean package \
+            -DskipTests \
+            -Dapp.name=bank-account-eapi \
+            -Denvironment=Sandbox
+
+  deploy:
+    needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'yes' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Deploy to CloudHub
+        env:
+          ANYPOINT_USERNAME: ${{ secrets.ANYPOINT_USERNAME }}
+          ANYPOINT_PASSWORD: ${{ secrets.ANYPOINT_PASSWORD }}
+        run: |
+          mvn -B clean deploy \
+            -DmuleDeploy \
+            -DskipTests \
+            -Dapp.name=bank-account-eapi \
+            -Denvironment=Sandbox \
+            -Danypoint.username=${ANYPOINT_USERNAME} \
+            -Danypoint.password=${ANYPOINT_PASSWORD}
