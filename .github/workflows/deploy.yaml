@@ -29,6 +29,5 @@ jobs:
           -DskipTests \
           -Dapp.name=bank-account-eapi \
           -Denvironment=Sandbox \
-          -Dtarget=Cloudhub-US-East-2 \
           -Danypoint.username=${{ secrets.ANYPOINT_USERNAME }} \
           -Danypoint.password=${{ secrets.ANYPOINT_PASSWORD }}
